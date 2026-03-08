@@ -1,14 +1,13 @@
 import { useState } from "react";
-import { Book, Search, MessageCircle, Bookmark, Home } from "lucide-react";
+import { Book, MessageCircle, Bookmark, Home } from "lucide-react";
 import { ThemeToggle, useTheme } from "@/components/ThemeToggle";
 import SurahList from "@/components/SurahList";
 import QuranReader from "@/components/QuranReader";
-import SearchScreen from "@/components/SearchScreen";
 import AIAssistant from "@/components/AIAssistant";
 import BookmarksScreen from "@/components/BookmarksScreen";
 import DailyVerse from "@/components/DailyVerse";
 
-type Screen = "home" | "surahs" | "reader" | "search" | "ai" | "bookmarks";
+type Screen = "home" | "surahs" | "reader" | "ai" | "bookmarks";
 
 const Index = () => {
   const [screen, setScreen] = useState<Screen>("home");
