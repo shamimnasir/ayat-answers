@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Search, X } from "lucide-react";
+import { Search, X, Loader2 } from "lucide-react";
+import { searchCachedAyahs } from "@/lib/quranApi";
 import { searchAyahs } from "@/data/ayahs";
 import { surahs } from "@/data/surahs";
 import { Ayah } from "@/types/quran";
@@ -16,7 +17,20 @@ export default function SearchScreen({ onSelectSurah }: SearchScreenProps) {
   const handleSearch = (q: string) => {
     setQuery(q);
     if (q.trim().length >= 2) {
-      setResults(searchAyahs(q.trim()));
+      // Search both cached API data and local fallback data
+      const cachedResults = searchCachedAyahs(q.trim());
+      const localResults = searchAyahs(q.trim());
+
+      // Merge and deduplicate by id
+      const seen = new Set<number>();
+      const merged: Ayah[] = [];
+      for (const a of [...cachedResults, ...localResults]) {
+        if (!seen.has(a.id)) {
+          seen.add(a.id);
+          merged.push(a);
+        }
+      }
+      setResults(merged.slice(0, 50));
       setSearched(true);
     } else {
       setResults([]);
@@ -50,6 +64,11 @@ export default function SearchScreen({ onSelectSurah }: SearchScreenProps) {
             </button>
           )}
         </div>
+        {searched && (
+          <p className="text-xs text-muted-foreground mt-2">
+            💡 Search works across surahs you've already read. Open more surahs to expand search coverage.
+          </p>
+        )}
       </div>
 
       {/* Suggestions */}
@@ -79,13 +98,13 @@ export default function SearchScreen({ onSelectSurah }: SearchScreenProps) {
           {results.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-muted-foreground">No verses found for "{query}"</p>
-              <p className="text-xs text-muted-foreground mt-1">Try different keywords</p>
+              <p className="text-xs text-muted-foreground mt-1">Try different keywords or read more surahs to expand search</p>
             </div>
           ) : (
             <div className="space-y-3">
               {results.map(ayah => (
                 <button
-                  key={ayah.id}
+                  key={`${ayah.surahId}-${ayah.ayahNumber}`}
                   onClick={() => onSelectSurah(ayah.surahId)}
                   className="verse-card w-full text-left animate-fade-in"
                 >
