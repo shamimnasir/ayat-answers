@@ -1,13 +1,24 @@
-import { getRandomAyah } from "@/data/ayahs";
-import { surahs } from "@/data/surahs";
 import { useMemo } from "react";
+import { surahs } from "@/data/surahs";
+import { getAllCachedAyahs } from "@/lib/quranApi";
+import { ayahs as fallbackAyahs } from "@/data/ayahs";
+import { Ayah } from "@/types/quran";
 
 interface DailyVerseProps {
   onSelectSurah: (surahId: number) => void;
 }
 
 export default function DailyVerse({ onSelectSurah }: DailyVerseProps) {
-  const ayah = useMemo(() => getRandomAyah(), []);
+  const ayah = useMemo(() => {
+    // Use cached data if available, otherwise fallback
+    const allCached = getAllCachedAyahs();
+    const pool: Ayah[] = allCached.length > 0 ? allCached : fallbackAyahs;
+    // Use date-based seed for consistent daily verse
+    const today = new Date();
+    const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+    return pool[seed % pool.length];
+  }, []);
+
   const surah = surahs.find(s => s.id === ayah.surahId);
 
   return (
