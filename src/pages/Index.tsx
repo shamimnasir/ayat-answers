@@ -58,34 +58,56 @@ const Index = () => {
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => setScreen("surahs")}
-                className="verse-card flex flex-col items-center gap-2 py-6 hover:border-gold/50"
+                className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-gold/10 to-gold/5 border border-gold/20 p-5 text-left transition-all hover:shadow-lg hover:shadow-gold/10 hover:border-gold/40 hover:-translate-y-0.5"
               >
-                <Book className="w-6 h-6 text-gold" />
-                <span className="text-sm font-semibold">Browse Surahs</span>
-                <span className="text-xs text-muted-foreground">114 Surahs</span>
-              </button>
-              <button
-                onClick={() => setScreen("ai")}
-                className="verse-card flex flex-col items-center gap-2 py-6 hover:border-gold/50 col-span-2"
-              >
-                <MessageCircle className="w-6 h-6 text-gold" />
-                <span className="text-sm font-semibold">AI Search & Assistant</span>
-                <span className="text-xs text-muted-foreground">Search & ask questions · Arabic · English · বাংলা</span>
+                <div className="absolute top-0 right-0 w-20 h-20 bg-gold/5 rounded-full -translate-x-4 -translate-y-4 group-hover:scale-150 transition-transform duration-500" />
+                <div className="relative">
+                  <div className="w-10 h-10 rounded-xl bg-gold/15 flex items-center justify-center mb-3 group-hover:bg-gold/25 transition-colors">
+                    <Book className="w-5 h-5 text-gold" />
+                  </div>
+                  <h3 className="text-sm font-bold text-foreground mb-0.5">Browse Surahs</h3>
+                  <p className="text-xs text-muted-foreground">114 Surahs</p>
+                </div>
               </button>
               <button
                 onClick={() => setScreen("bookmarks")}
-                className="verse-card flex flex-col items-center gap-2 py-6 hover:border-gold/50"
+                className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-secondary/10 to-secondary/5 border border-secondary/20 p-5 text-left transition-all hover:shadow-lg hover:shadow-secondary/10 hover:border-secondary/40 hover:-translate-y-0.5"
               >
-                <Bookmark className="w-6 h-6 text-emerald-brand" />
-                <span className="text-sm font-semibold">Bookmarks</span>
-                <span className="text-xs text-muted-foreground">Saved verses</span>
+                <div className="absolute top-0 right-0 w-20 h-20 bg-secondary/5 rounded-full -translate-x-4 -translate-y-4 group-hover:scale-150 transition-transform duration-500" />
+                <div className="relative">
+                  <div className="w-10 h-10 rounded-xl bg-secondary/15 flex items-center justify-center mb-3 group-hover:bg-secondary/25 transition-colors">
+                    <Bookmark className="w-5 h-5 text-secondary" />
+                  </div>
+                  <h3 className="text-sm font-bold text-foreground mb-0.5">Bookmarks</h3>
+                  <p className="text-xs text-muted-foreground">Saved verses</p>
+                </div>
               </button>
             </div>
+
+            {/* AI Search - Featured */}
+            <button
+              onClick={() => setScreen("ai")}
+              className="group relative w-full overflow-hidden rounded-2xl bg-gradient-to-r from-gold/15 via-gold/8 to-secondary/10 border border-gold/20 p-5 text-left transition-all hover:shadow-xl hover:shadow-gold/15 hover:border-gold/40 hover:-translate-y-0.5"
+            >
+              <div className="absolute -right-6 -bottom-6 w-32 h-32 bg-gold/5 rounded-full group-hover:scale-150 transition-transform duration-700" />
+              <div className="absolute right-4 top-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                <MessageCircle className="w-16 h-16 text-gold" />
+              </div>
+              <div className="relative flex items-start gap-4">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-gold/25 to-gold/10 flex items-center justify-center flex-shrink-0 group-hover:from-gold/35 group-hover:to-gold/20 transition-colors">
+                  <MessageCircle className="w-6 h-6 text-gold" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-foreground mb-0.5">AI Search & Assistant</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed">Search the entire Quran & ask questions · Arabic · English · বাংলা</p>
+                </div>
+              </div>
+            </button>
 
             {/* Continue Reading */}
             <button
               onClick={() => openSurah(1)}
-              className="w-full gold-gradient text-primary-foreground rounded-xl py-4 px-6 text-sm font-semibold hover:opacity-90 transition-opacity"
+              className="w-full gold-gradient text-primary-foreground rounded-2xl py-4 px-6 text-sm font-semibold hover:opacity-90 transition-all hover:shadow-lg hover:shadow-gold/20"
             >
               Start Reading — Al-Fatiha
             </button>
