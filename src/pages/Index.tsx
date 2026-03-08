@@ -1,14 +1,13 @@
 import { useState } from "react";
-import { Book, Search, MessageCircle, Bookmark, Home } from "lucide-react";
+import { Book, MessageCircle, Bookmark, Home } from "lucide-react";
 import { ThemeToggle, useTheme } from "@/components/ThemeToggle";
 import SurahList from "@/components/SurahList";
 import QuranReader from "@/components/QuranReader";
-import SearchScreen from "@/components/SearchScreen";
 import AIAssistant from "@/components/AIAssistant";
 import BookmarksScreen from "@/components/BookmarksScreen";
 import DailyVerse from "@/components/DailyVerse";
 
-type Screen = "home" | "surahs" | "reader" | "search" | "ai" | "bookmarks";
+type Screen = "home" | "surahs" | "reader" | "ai" | "bookmarks";
 
 const Index = () => {
   const [screen, setScreen] = useState<Screen>("home");
@@ -23,8 +22,7 @@ const Index = () => {
   const navItems = [
     { id: "home" as Screen, icon: Home, label: "Home" },
     { id: "surahs" as Screen, icon: Book, label: "Surahs" },
-    { id: "search" as Screen, icon: Search, label: "Search" },
-    { id: "ai" as Screen, icon: MessageCircle, label: "AI" },
+    { id: "ai" as Screen, icon: MessageCircle, label: "AI Search" },
     { id: "bookmarks" as Screen, icon: Bookmark, label: "Saved" },
   ];
 
@@ -67,20 +65,12 @@ const Index = () => {
                 <span className="text-xs text-muted-foreground">114 Surahs</span>
               </button>
               <button
-                onClick={() => setScreen("search")}
-                className="verse-card flex flex-col items-center gap-2 py-6 hover:border-gold/50"
-              >
-                <Search className="w-6 h-6 text-emerald-brand" />
-                <span className="text-sm font-semibold">Search Quran</span>
-                <span className="text-xs text-muted-foreground">Arabic · English · বাংলা</span>
-              </button>
-              <button
                 onClick={() => setScreen("ai")}
-                className="verse-card flex flex-col items-center gap-2 py-6 hover:border-gold/50"
+                className="verse-card flex flex-col items-center gap-2 py-6 hover:border-gold/50 col-span-2"
               >
                 <MessageCircle className="w-6 h-6 text-gold" />
-                <span className="text-sm font-semibold">AI Assistant</span>
-                <span className="text-xs text-muted-foreground">Ask questions</span>
+                <span className="text-sm font-semibold">AI Search & Assistant</span>
+                <span className="text-xs text-muted-foreground">Search & ask questions · Arabic · English · বাংলা</span>
               </button>
               <button
                 onClick={() => setScreen("bookmarks")}
@@ -104,8 +94,7 @@ const Index = () => {
 
         {screen === "surahs" && <SurahList onSelectSurah={openSurah} />}
         {screen === "reader" && <QuranReader surahId={selectedSurah} onBack={() => setScreen("surahs")} />}
-        {screen === "search" && <SearchScreen onSelectSurah={openSurah} />}
-        {screen === "ai" && <AIAssistant />}
+        {screen === "ai" && <AIAssistant onSelectSurah={openSurah} />}
         {screen === "bookmarks" && <BookmarksScreen onSelectSurah={openSurah} />}
       </main>
 
