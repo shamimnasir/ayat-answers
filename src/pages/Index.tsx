@@ -94,8 +94,7 @@ const Index = () => {
 
         {screen === "surahs" && <SurahList onSelectSurah={openSurah} />}
         {screen === "reader" && <QuranReader surahId={selectedSurah} onBack={() => setScreen("surahs")} />}
-        {screen === "search" && <SearchScreen onSelectSurah={openSurah} />}
-        {screen === "ai" && <AIAssistant />}
+        {screen === "ai" && <AIAssistant onSelectSurah={openSurah} />}
         {screen === "bookmarks" && <BookmarksScreen onSelectSurah={openSurah} />}
       </main>
 
