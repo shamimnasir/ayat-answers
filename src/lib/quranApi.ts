@@ -17,6 +17,18 @@ interface AlQuranSurahResponse {
   };
 }
 
+interface AlQuranSearchResult {
+  data: {
+    matches: Array<{
+      number: number;
+      text: string;
+      numberInSurah: number;
+      surah: { number: number; englishName: string };
+      edition: { identifier: string };
+    }>;
+  };
+}
+
 // Fetch a single edition of a surah
 async function fetchEdition(surahId: number, edition: string): Promise<AlQuranAyah[]> {
   const res = await fetch(`${API_BASE}/surah/${surahId}/${edition}`);
@@ -27,7 +39,6 @@ async function fetchEdition(surahId: number, edition: string): Promise<AlQuranAy
 
 // Fetch complete surah with Arabic + English + Bangla
 export async function fetchCompleteSurah(surahId: number): Promise<Ayah[]> {
-  // Check cache first
   const cached = localStorage.getItem(CACHE_PREFIX + surahId);
   if (cached) {
     try {
@@ -37,14 +48,12 @@ export async function fetchCompleteSurah(surahId: number): Promise<Ayah[]> {
     }
   }
 
-  // Fetch all three editions in parallel
   const [arabicAyahs, englishAyahs, banglaAyahs] = await Promise.all([
     fetchEdition(surahId, "quran-uthmani"),
     fetchEdition(surahId, "en.sahih"),
     fetchEdition(surahId, "bn.bengali"),
   ]);
 
-  // Combine into Ayah objects
   const ayahs: Ayah[] = arabicAyahs.map((ar, i) => ({
     id: ar.number,
     surahId,
@@ -55,28 +64,131 @@ export async function fetchCompleteSurah(surahId: number): Promise<Ayah[]> {
     juzNumber: ar.juz,
   }));
 
-  // Cache for offline use
   try {
     localStorage.setItem(CACHE_PREFIX + surahId, JSON.stringify(ayahs));
   } catch {
-    // localStorage full — clear oldest cached surahs
     clearOldestCache();
     try {
       localStorage.setItem(CACHE_PREFIX + surahId, JSON.stringify(ayahs));
-    } catch {
-      // Still can't store, just proceed without caching
-    }
+    } catch { /* ignore */ }
   }
 
   return ayahs;
 }
 
-// Check if a surah is cached
+// Search the Quran API directly for a keyword (English edition)
+export async function searchQuranAPI(query: string): Promise<Ayah[]> {
+  try {
+    // Search English translation
+    const res = await fetch(`${API_BASE}/search/${encodeURIComponent(query)}/all/en.sahih`);
+    if (!res.ok) return [];
+    const data: AlQuranSearchResult = await res.json();
+    
+    if (!data.data?.matches?.length) return [];
+
+    // Get unique surah IDs from results
+    const matches = data.data.matches.slice(0, 20);
+    const surahIds = [...new Set(matches.map(m => m.surah.number))];
+
+    // For each matched ayah, try to get full data (Arabic + Bangla)
+    const results: Ayah[] = [];
+
+    for (const match of matches) {
+      const surahId = match.surah.number;
+      const ayahNum = match.numberInSurah;
+
+      // Check if we have cached data for this surah
+      let cachedSurah = getCachedSurah(surahId);
+
+      if (cachedSurah) {
+        const found = cachedSurah.find(a => a.ayahNumber === ayahNum);
+        if (found) {
+          results.push(found);
+          continue;
+        }
+      }
+
+      // Otherwise create a partial result with English text
+      results.push({
+        id: match.number,
+        surahId,
+        ayahNumber: ayahNum,
+        arabicText: "",
+        englishTranslation: match.text,
+        banglaTranslation: "",
+        juzNumber: 0,
+      });
+    }
+
+    // Try to enrich results without Arabic/Bangla by fetching individual ayahs
+    const enrichPromises = results
+      .filter(r => !r.arabicText)
+      .slice(0, 5) // Limit enrichment to avoid too many requests
+      .map(async (r) => {
+        try {
+          const [arRes, bnRes] = await Promise.all([
+            fetch(`${API_BASE}/ayah/${r.id}/quran-uthmani`),
+            fetch(`${API_BASE}/ayah/${r.id}/bn.bengali`),
+          ]);
+          if (arRes.ok) {
+            const arData = await arRes.json();
+            r.arabicText = arData.data?.text || "";
+          }
+          if (bnRes.ok) {
+            const bnData = await bnRes.json();
+            r.banglaTranslation = bnData.data?.text || "";
+          }
+        } catch { /* ignore enrichment failures */ }
+      });
+
+    await Promise.all(enrichPromises);
+
+    return results;
+  } catch (e) {
+    console.error("API search failed:", e);
+    return [];
+  }
+}
+
+// Search Bangla translation via API
+export async function searchQuranAPIBangla(query: string): Promise<Ayah[]> {
+  try {
+    const res = await fetch(`${API_BASE}/search/${encodeURIComponent(query)}/all/bn.bengali`);
+    if (!res.ok) return [];
+    const data: AlQuranSearchResult = await res.json();
+    
+    if (!data.data?.matches?.length) return [];
+
+    const matches = data.data.matches.slice(0, 15);
+    const results: Ayah[] = [];
+
+    for (const match of matches) {
+      const cachedSurah = getCachedSurah(match.surah.number);
+      if (cachedSurah) {
+        const found = cachedSurah.find(a => a.ayahNumber === match.numberInSurah);
+        if (found) { results.push(found); continue; }
+      }
+      results.push({
+        id: match.number,
+        surahId: match.surah.number,
+        ayahNumber: match.numberInSurah,
+        arabicText: "",
+        englishTranslation: "",
+        banglaTranslation: match.text,
+        juzNumber: 0,
+      });
+    }
+
+    return results;
+  } catch {
+    return [];
+  }
+}
+
 export function isSurahCached(surahId: number): boolean {
   return localStorage.getItem(CACHE_PREFIX + surahId) !== null;
 }
 
-// Get cached surah data (for offline/search)
 export function getCachedSurah(surahId: number): Ayah[] | null {
   const cached = localStorage.getItem(CACHE_PREFIX + surahId);
   if (!cached) return null;
@@ -87,7 +199,6 @@ export function getCachedSurah(surahId: number): Ayah[] | null {
   }
 }
 
-// Get all cached ayahs for search
 export function getAllCachedAyahs(): Ayah[] {
   const all: Ayah[] = [];
   for (let i = 1; i <= 114; i++) {
@@ -97,18 +208,25 @@ export function getAllCachedAyahs(): Ayah[] {
   return all;
 }
 
-// Search across all cached ayahs
 export function searchCachedAyahs(query: string): Ayah[] {
   const q = query.toLowerCase();
   return getAllCachedAyahs().filter(a =>
     a.arabicText.includes(query) ||
     a.englishTranslation.toLowerCase().includes(q) ||
     a.banglaTranslation.includes(query)
-  ).slice(0, 50); // Limit results
+  ).slice(0, 50);
+}
+
+// Count how many surahs are cached
+export function getCachedSurahCount(): number {
+  let count = 0;
+  for (let i = 1; i <= 114; i++) {
+    if (localStorage.getItem(CACHE_PREFIX + i)) count++;
+  }
+  return count;
 }
 
 function clearOldestCache() {
-  // Remove first 10 cached surahs found
   let cleared = 0;
   for (let i = 1; i <= 114 && cleared < 10; i++) {
     const key = CACHE_PREFIX + i;
