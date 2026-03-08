@@ -22,8 +22,7 @@ const Index = () => {
   const navItems = [
     { id: "home" as Screen, icon: Home, label: "Home" },
     { id: "surahs" as Screen, icon: Book, label: "Surahs" },
-    { id: "search" as Screen, icon: Search, label: "Search" },
-    { id: "ai" as Screen, icon: MessageCircle, label: "AI" },
+    { id: "ai" as Screen, icon: MessageCircle, label: "AI Search" },
     { id: "bookmarks" as Screen, icon: Bookmark, label: "Saved" },
   ];
 
