@@ -1,7 +1,7 @@
-import { getBookmarks } from "@/lib/bookmarks";
+import { getBookmarks, removeBookmark } from "@/lib/bookmarks";
 import { surahs } from "@/data/surahs";
-import { ayahs } from "@/data/ayahs";
-import { removeBookmark } from "@/lib/bookmarks";
+import { getCachedSurah } from "@/lib/quranApi";
+import { ayahs as fallbackAyahs } from "@/data/ayahs";
 import { Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -16,6 +16,17 @@ export default function BookmarksScreen({ onSelectSurah }: BookmarksScreenProps)
   const handleRemove = (surahId: number, ayahNumber: number) => {
     setBookmarks(removeBookmark(surahId, ayahNumber));
     toast("Bookmark removed");
+  };
+
+  const findAyah = (surahId: number, ayahNumber: number) => {
+    // Try cached API data first
+    const cached = getCachedSurah(surahId);
+    if (cached) {
+      const found = cached.find(a => a.ayahNumber === ayahNumber);
+      if (found) return found;
+    }
+    // Fallback to local data
+    return fallbackAyahs.find(a => a.surahId === surahId && a.ayahNumber === ayahNumber);
   };
 
   if (bookmarks.length === 0) {
@@ -34,7 +45,7 @@ export default function BookmarksScreen({ onSelectSurah }: BookmarksScreenProps)
       </p>
       {bookmarks.map((bm) => {
         const surah = surahs.find(s => s.id === bm.surahId);
-        const ayah = ayahs.find(a => a.surahId === bm.surahId && a.ayahNumber === bm.ayahNumber);
+        const ayah = findAyah(bm.surahId, bm.ayahNumber);
 
         return (
           <div key={`${bm.surahId}-${bm.ayahNumber}`} className="verse-card animate-fade-in">
@@ -46,11 +57,13 @@ export default function BookmarksScreen({ onSelectSurah }: BookmarksScreenProps)
                 <Trash2 className="w-4 h-4 text-muted-foreground" />
               </button>
             </div>
-            {ayah && (
+            {ayah ? (
               <>
                 <p className="font-arabic text-right text-lg leading-relaxed mb-2">{ayah.arabicText}</p>
                 <p className="text-xs text-muted-foreground">{ayah.englishTranslation}</p>
               </>
+            ) : (
+              <p className="text-xs text-muted-foreground italic">Open this surah to load the verse text</p>
             )}
           </div>
         );

@@ -1,8 +1,9 @@
-import { useState } from "react";
-import { ArrowLeft, Bookmark, BookmarkCheck, Copy, Share2, ChevronUp, ChevronDown } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ArrowLeft, Bookmark, BookmarkCheck, Copy, Share2, ChevronUp, ChevronDown, Loader2, WifiOff } from "lucide-react";
 import { surahs } from "@/data/surahs";
-import { getAyahsBySurah } from "@/data/ayahs";
 import { isBookmarked, addBookmark, removeBookmark } from "@/lib/bookmarks";
+import { fetchCompleteSurah } from "@/lib/quranApi";
+import { Ayah } from "@/types/quran";
 import { toast } from "sonner";
 
 interface QuranReaderProps {
@@ -12,9 +13,34 @@ interface QuranReaderProps {
 
 export default function QuranReader({ surahId, onBack }: QuranReaderProps) {
   const surah = surahs.find(s => s.id === surahId);
-  const ayahsList = getAyahsBySurah(surahId);
+  const [ayahsList, setAyahsList] = useState<Ayah[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [fontSize, setFontSize] = useState(28);
   const [, forceUpdate] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+
+    fetchCompleteSurah(surahId)
+      .then(data => {
+        if (!cancelled) {
+          setAyahsList(data);
+          setLoading(false);
+        }
+      })
+      .catch(err => {
+        if (!cancelled) {
+          setError("Could not load surah. Please check your internet connection and try again.");
+          setLoading(false);
+          console.error("Failed to fetch surah:", err);
+        }
+      });
+
+    return () => { cancelled = true; };
+  }, [surahId]);
 
   if (!surah) return null;
 
@@ -34,7 +60,7 @@ export default function QuranReader({ surahId, onBack }: QuranReaderProps) {
     toast("Copied to clipboard");
   };
 
-  const handleShare = (ayah: typeof ayahsList[0]) => {
+  const handleShare = (ayah: Ayah) => {
     const text = `${ayah.arabicText}\n\n${ayah.englishTranslation}\n\n— ${surah.nameEnglish} (${surah.id}:${ayah.ayahNumber})`;
     if (navigator.share) {
       navigator.share({ text });
@@ -65,10 +91,45 @@ export default function QuranReader({ surahId, onBack }: QuranReaderProps) {
             </button>
           </div>
         </div>
+        {/* Ayah count */}
+        {!loading && !error && (
+          <p className="text-center text-xs text-muted-foreground mt-1">
+            {ayahsList.length} verses • {surah.revelationType === 'Meccan' ? 'মক্কায় অবতীর্ণ' : 'মদিনায় অবতীর্ণ'}
+          </p>
+        )}
       </div>
 
+      {/* Loading state */}
+      {loading && (
+        <div className="flex flex-col items-center justify-center py-20">
+          <Loader2 className="w-8 h-8 text-gold animate-spin mb-4" />
+          <p className="text-muted-foreground text-sm">Loading {surah.nameEnglish}...</p>
+          <p className="text-xs text-muted-foreground mt-1">{surah.totalAyahs} verses</p>
+        </div>
+      )}
+
+      {/* Error state */}
+      {error && (
+        <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
+          <WifiOff className="w-8 h-8 text-muted-foreground mb-4" />
+          <p className="text-muted-foreground">{error}</p>
+          <button
+            onClick={() => {
+              setLoading(true);
+              setError(null);
+              fetchCompleteSurah(surahId)
+                .then(data => { setAyahsList(data); setLoading(false); })
+                .catch(() => { setError("Still unable to load. Please try again later."); setLoading(false); });
+            }}
+            className="mt-4 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm hover:opacity-90 transition-opacity"
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
       {/* Bismillah */}
-      {surahId !== 1 && surahId !== 9 && (
+      {!loading && !error && surahId !== 1 && surahId !== 9 && (
         <div className="text-center py-6 px-4">
           <p className="font-arabic text-gold text-2xl leading-relaxed">
             بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
@@ -77,12 +138,7 @@ export default function QuranReader({ surahId, onBack }: QuranReaderProps) {
       )}
 
       {/* Verses */}
-      {ayahsList.length === 0 ? (
-        <div className="text-center py-16 px-4">
-          <p className="text-muted-foreground">Verses for this Surah are not yet loaded in the local dataset.</p>
-          <p className="text-sm text-muted-foreground mt-2">Complete Quran data will be available with the database integration.</p>
-        </div>
-      ) : (
+      {!loading && !error && (
         <div className="space-y-4 px-4 pt-2">
           {ayahsList.map((ayah) => {
             const bookmarked = isBookmarked(surahId, ayah.ayahNumber);
