@@ -65,20 +65,12 @@ const Index = () => {
                 <span className="text-xs text-muted-foreground">114 Surahs</span>
               </button>
               <button
-                onClick={() => setScreen("search")}
-                className="verse-card flex flex-col items-center gap-2 py-6 hover:border-gold/50"
-              >
-                <Search className="w-6 h-6 text-emerald-brand" />
-                <span className="text-sm font-semibold">Search Quran</span>
-                <span className="text-xs text-muted-foreground">Arabic · English · বাংলা</span>
-              </button>
-              <button
                 onClick={() => setScreen("ai")}
-                className="verse-card flex flex-col items-center gap-2 py-6 hover:border-gold/50"
+                className="verse-card flex flex-col items-center gap-2 py-6 hover:border-gold/50 col-span-2"
               >
                 <MessageCircle className="w-6 h-6 text-gold" />
-                <span className="text-sm font-semibold">AI Assistant</span>
-                <span className="text-xs text-muted-foreground">Ask questions</span>
+                <span className="text-sm font-semibold">AI Search & Assistant</span>
+                <span className="text-xs text-muted-foreground">Search & ask questions · Arabic · English · বাংলা</span>
               </button>
               <button
                 onClick={() => setScreen("bookmarks")}
