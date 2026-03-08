@@ -1,16 +1,30 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Bot, User } from "lucide-react";
+import { Send, Bot, User, Loader2 } from "lucide-react";
+import { searchQuranAPI, searchQuranAPIBangla } from "@/lib/quranApi";
+import { surahs } from "@/data/surahs";
+import { Ayah } from "@/types/quran";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
 }
 
+function isBangla(text: string): boolean {
+  const banglaChars = text.match(/[\u0980-\u09FF]/g);
+  return banglaChars !== null && banglaChars.length >= 2;
+}
+
+function getSurahName(surahId: number, bangla: boolean): string {
+  const s = surahs.find(su => su.id === surahId);
+  if (!s) return `Surah ${surahId}`;
+  return bangla ? `সূরা ${s.nameBangla}` : `Surah ${s.nameEnglish}`;
+}
+
 export default function AIAssistant() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "আসসালামু আলাইকুম! 🌙 আমি আপনার কুরআন AI সহকারী। কুরআন সম্পর্কে যেকোনো প্রশ্ন করুন, আমি প্রাসঙ্গিক আয়াত ও ব্যাখ্যা খুঁজে দেব।\n\nজিজ্ঞেস করুন:\n• \"ধৈর্য সম্পর্কে কুরআন কী বলে?\"\n• \"রহমত সম্পর্কে আয়াত\"\n• \"নামাজ সম্পর্কে\"\n\nYou can also ask in English!"
+      content: "আসসালামু আলাইকুম! 🌙 আমি আপনার কুরআন AI সহকারী। কুরআন সম্পর্কে যেকোনো প্রশ্ন করুন — আমি সম্পূর্ণ কুরআন থেকে প্রাসঙ্গিক আয়াত খুঁজে দেব।\n\nউদাহরণ:\n• \"ধৈর্য সম্পর্কে আয়াত\"\n• \"What does Quran say about patience?\"\n• \"Al-Aqsa\"\n• \"Charity\"\n• \"মূসা (আ.)\""
     }
   ]);
   const [input, setInput] = useState("");
@@ -26,14 +40,18 @@ export default function AIAssistant() {
 
     const userMsg: Message = { role: "user", content: input.trim() };
     setMessages(prev => [...prev, userMsg]);
+    const question = input.trim();
     setInput("");
     setIsLoading(true);
 
-    setTimeout(() => {
-      const response = generateResponse(userMsg.content);
+    try {
+      const response = await generateResponse(question);
       setMessages(prev => [...prev, { role: "assistant", content: response }]);
+    } catch (e) {
+      setMessages(prev => [...prev, { role: "assistant", content: "দুঃখিত, একটি সমস্যা হয়েছে। আপনার ইন্টারনেট সংযোগ পরীক্ষা করুন এবং আবার চেষ্টা করুন।" }]);
+    } finally {
       setIsLoading(false);
-    }, 1200);
+    }
   };
 
   return (
@@ -65,12 +83,9 @@ export default function AIAssistant() {
             <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
               <Bot className="w-4 h-4 text-primary-foreground" />
             </div>
-            <div className="bg-muted rounded-2xl rounded-bl-md px-4 py-3">
-              <div className="flex gap-1">
-                <div className="w-2 h-2 rounded-full bg-muted-foreground animate-pulse" />
-                <div className="w-2 h-2 rounded-full bg-muted-foreground animate-pulse" style={{ animationDelay: "0.2s" }} />
-                <div className="w-2 h-2 rounded-full bg-muted-foreground animate-pulse" style={{ animationDelay: "0.4s" }} />
-              </div>
+            <div className="bg-muted rounded-2xl rounded-bl-md px-4 py-3 flex items-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin text-gold" />
+              <span className="text-xs text-muted-foreground">সম্পূর্ণ কুরআনে অনুসন্ধান করছি...</span>
             </div>
           </div>
         )}
@@ -99,190 +114,122 @@ export default function AIAssistant() {
   );
 }
 
-function isBangla(text: string): boolean {
-  const banglaChars = text.match(/[\u0980-\u09FF]/g);
-  return banglaChars !== null && banglaChars.length >= 2;
-}
-
-function generateResponse(question: string): string {
-  const q = question.toLowerCase();
+// Extract search keywords from a natural language question
+function extractKeywords(question: string): string[] {
   const bn = isBangla(question);
 
-  if (q.includes("patience") || q.includes("sabr") || q.includes("ধৈর্য") || q.includes("সবর")) {
-    if (bn) {
-      return `📖 কুরআনে ধৈর্য (সবর) সম্পর্কে অনেক আয়াত রয়েছে:
+  // Common stop words to remove
+  const stopWordsEn = new Set([
+    "what", "does", "the", "quran", "say", "about", "how", "to", "in", "is",
+    "are", "was", "were", "a", "an", "of", "and", "or", "for", "with", "from",
+    "can", "do", "will", "should", "which", "where", "when", "why", "who",
+    "that", "this", "it", "its", "have", "has", "had", "be", "been", "being",
+    "there", "their", "they", "them", "those", "these", "some", "any", "all",
+    "on", "at", "by", "into", "not", "no", "so", "if", "but", "up", "out",
+    "tell", "me", "us", "my", "our", "your", "i", "we", "you", "he", "she",
+    "verses", "verse", "ayah", "ayat", "surah", "regarding", "according",
+  ]);
 
-**সূরা আল-বাকারা (২:১৫৩)**
-"يَا أَيُّهَا الَّذِينَ آمَنُوا اسْتَعِينُوا بِالصَّبْرِ وَالصَّلَاةِ"
-"হে মুমিনগণ! ধৈর্য ও সালাতের মাধ্যমে সাহায্য চাও। নিশ্চয় আল্লাহ ধৈর্যশীলদের সাথে আছেন।"
+  const stopWordsBn = new Set([
+    "কি", "কী", "কে", "কোন", "কোনো", "কুরআন", "কুরআনে", "সম্পর্কে", "বলে",
+    "কিভাবে", "কেন", "আর", "এবং", "বা", "তার", "এই", "সেই", "একটি",
+    "এটি", "যে", "থেকে", "জন্য", "মধ্যে", "সাথে", "আমি", "আমরা", "তুমি",
+    "আপনি", "সে", "তারা", "হয়", "আছে", "ছিল", "হবে", "করে", "নিয়ে",
+    "দিয়ে", "বলেছে", "বলেছেন", "বলা", "আয়াত", "সূরা", "প্রশ্ন",
+  ]);
 
-**সূরা আশ-শারহ (৯৪:৫-৬)**
-"فَإِنَّ مَعَ الْعُسْرِ يُسْرًا • إِنَّ مَعَ الْعُسْرِ يُسْرًا"
-"নিশ্চয়ই কষ্টের সাথে স্বস্তি আছে। অবশ্যই কষ্টের সাথে স্বস্তি আছে।"
+  const stopWords = bn ? stopWordsBn : stopWordsEn;
 
-**সূরা আল-আসর (১০৩:৩)**
-"...وَتَوَاصَوْا بِالْحَقِّ وَتَوَاصَوْا بِالصَّبْرِ"
-"...এবং পরস্পরকে সত্যের উপদেশ দিয়েছে ও ধৈর্যের উপদেশ দিয়েছে।"
+  const words = question
+    .replace(/[?.,!"""''()]/g, "")
+    .split(/\s+/)
+    .filter(w => w.length >= 2 && !stopWords.has(w.toLowerCase()))
+    .map(w => w.trim())
+    .filter(Boolean);
 
-💡 ধৈর্য কুরআনে সবচেয়ে প্রশংসিত গুণাবলীর একটি। আল্লাহ প্রতিশ্রুতি দিয়েছেন যে তিনি ধৈর্যশীলদের সাথে আছেন।`;
+  // Return unique keywords
+  return [...new Set(words)];
+}
+
+async function generateResponse(question: string): Promise<string> {
+  const bn = isBangla(question);
+  const keywords = extractKeywords(question);
+
+  // Try multiple search queries to find relevant verses
+  let allResults: Ayah[] = [];
+
+  // Search with full question and individual keywords
+  const searchTerms = [
+    keywords.join(" "),
+    ...keywords.slice(0, 3),
+  ].filter(Boolean);
+
+  for (const term of searchTerms) {
+    if (!term) continue;
+    try {
+      const results = bn
+        ? await searchQuranAPIBangla(term)
+        : await searchQuranAPI(term);
+      allResults.push(...results);
+    } catch {
+      // Continue with other terms
     }
-    return `📖 The Quran speaks extensively about patience (Sabr):
-
-**Surah Al-Baqarah (2:153)**
-"يَا أَيُّهَا الَّذِينَ آمَنُوا اسْتَعِينُوا بِالصَّبْرِ وَالصَّلَاةِ"
-"O you who have believed, seek help through patience and prayer. Indeed, Allah is with the patient."
-
-**Surah Ash-Sharh (94:5-6)**
-"فَإِنَّ مَعَ الْعُسْرِ يُسْرًا • إِنَّ مَعَ الْعُسْرِ يُسْرًا"
-"For indeed, with hardship comes ease. Indeed, with hardship comes ease."
-
-💡 Patience is one of the most praised qualities in the Quran.`;
   }
 
-  if (q.includes("mercy") || q.includes("merciful") || q.includes("রহমত") || q.includes("দয়া") || q.includes("করুণা")) {
-    if (bn) {
-      return `📖 আল্লাহর রহমত কুরআনের একটি কেন্দ্রীয় বিষয়:
-
-**সূরা আল-ফাতিহা (১:১)**
-"بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ"
-"পরম করুণাময় অতি দয়ালু আল্লাহর নামে।"
-
-**সূরা আর-রাহমান (৫৫:১-৪)**
-"الرَّحْمَٰنُ • عَلَّمَ الْقُرْآنَ • خَلَقَ الْإِنْسَانَ • عَلَّمَهُ الْبَيَانَ"
-"পরম দয়াময়। তিনি শিক্ষা দিয়েছেন কুরআন। তিনি সৃষ্টি করেছেন মানুষ। তাকে শিখিয়েছেন ভাষা।"
-
-**সূরা আল-বাকারা (২:২৮৬)**
-"لَا يُكَلِّفُ اللَّهُ نَفْسًا إِلَّا وُسْعَهَا"
-"আল্লাহ কোনো ব্যক্তির উপর তার সাধ্যের অতিরিক্ত বোঝা চাপান না।"
-
-💡 কুরআনের প্রতিটি সূরা (আত-তওবা ছাড়া) বিসমিল্লাহ দিয়ে শুরু হয়, আল্লাহর রহমত স্মরণ করে।`;
+  // Deduplicate
+  const seen = new Set<string>();
+  const unique: Ayah[] = [];
+  for (const a of allResults) {
+    const key = `${a.surahId}-${a.ayahNumber}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      unique.push(a);
     }
-    return `📖 Allah's Mercy is a central theme in the Quran:
-
-**Surah Al-Fatiha (1:1)**
-"بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ"
-"In the name of Allah, the Entirely Merciful, the Especially Merciful."
-
-**Surah Ar-Rahman (55:1-4)**
-"الرَّحْمَٰنُ • عَلَّمَ الْقُرْآنَ • خَلَقَ الْإِنْسَانَ • عَلَّمَهُ الْبَيَانَ"
-"The Most Merciful. Taught the Quran. Created man. Taught him eloquence."
-
-💡 Every Surah of the Quran (except At-Tawbah) begins with Bismillah, invoking Allah's mercy.`;
   }
 
-  if (q.includes("prayer") || q.includes("salat") || q.includes("salah") || q.includes("সালাত") || q.includes("নামাজ") || q.includes("নামায")) {
-    if (bn) {
-      return `📖 কুরআনে সালাত (নামাজ) সম্পর্কে:
+  // Take top results
+  const topResults = unique.slice(0, 5);
 
-**সূরা আল-বাকারা (২:৩)**
-"الَّذِينَ يُؤْمِنُونَ بِالْغَيْبِ وَيُقِيمُونَ الصَّلَاةَ"
-"যারা অদৃশ্যে ঈমান আনে, সালাত কায়েম করে এবং আমি তাদেরকে যে রিযিক দিয়েছি তা থেকে ব্যয় করে।"
+  if (topResults.length === 0) {
+    return bn
+      ? `📖 "${question}" সম্পর্কে কুরআনে সরাসরি কোনো আয়াত খুঁজে পাওয়া যায়নি।\n\nদয়া করে ভিন্ন কীওয়ার্ড ব্যবহার করে আবার চেষ্টা করুন। যেমন:\n• ইংরেজি শব্দ ব্যবহার করুন (patience, mercy, prayer)\n• নির্দিষ্ট বিষয় অনুসন্ধান করুন`
+      : `📖 No verses found for "${question}" in the Quran.\n\nPlease try different keywords. For example:\n• Use specific English words (patience, mercy, prayer, forgiveness)\n• Search for names (Moses, Abraham, Mary)\n• Search for topics (charity, fasting, heaven)`;
+  }
 
-**সূরা আল-বাকারা (২:১৫৩)**
-"اسْتَعِينُوا بِالصَّبْرِ وَالصَّلَاةِ"
-"ধৈর্য ও সালাতের মাধ্যমে সাহায্য চাও।"
+  // Build response
+  let response = bn
+    ? `📖 "${question}" সম্পর্কে কুরআনে প্রাসঙ্গিক আয়াতসমূহ:\n\n`
+    : `📖 Relevant Quran verses about "${question}":\n\n`;
 
-**সূরা আল-মাঊন (১০৭:৪-৫)**
-"فَوَيْلٌ لِلْمُصَلِّينَ • الَّذِينَ هُمْ عَنْ صَلَاتِهِمْ سَاهُونَ"
-"সেই সালাত আদায়কারীদের জন্য দুর্ভোগ, যারা তাদের সালাতের ব্যাপারে উদাসীন।"
+  for (const ayah of topResults) {
+    const surahName = getSurahName(ayah.surahId, bn);
+    const ref = `${surahName} (${ayah.surahId}:${ayah.ayahNumber})`;
 
-💡 কুরআনে সালাতের কথা ৭০০ বারেরও বেশি উল্লেখ করা হয়েছে এবং এটি ইসলামের দ্বিতীয় স্তম্ভ।`;
+    response += `**${ref}**\n`;
+
+    if (ayah.arabicText) {
+      response += `"${ayah.arabicText}"\n`;
     }
-    return `📖 Prayer (Salat) in the Quran:
 
-**Surah Al-Baqarah (2:3)**
-"الَّذِينَ يُؤْمِنُونَ بِالْغَيْبِ وَيُقِيمُونَ الصَّلَاةَ"
-"Who believe in the unseen, establish prayer, and spend out of what We have provided for them."
-
-**Surah Al-Baqarah (2:153)**
-"اسْتَعِينُوا بِالصَّبْرِ وَالصَّلَاةِ"
-"Seek help through patience and prayer."
-
-💡 Prayer is mentioned over 700 times in the Quran and is the second pillar of Islam.`;
-  }
-
-  if (q.includes("forgive") || q.includes("tawbah") || q.includes("repent") || q.includes("ক্ষমা") || q.includes("তওবা") || q.includes("মাফ")) {
-    if (bn) {
-      return `📖 কুরআনে ক্ষমা ও তওবা সম্পর্কে:
-
-**সূরা আন-নাসর (১১০:৩)**
-"فَسَبِّحْ بِحَمْدِ رَبِّكَ وَاسْتَغْفِرْهُ ۚ إِنَّهُ كَانَ تَوَّابًا"
-"তোমার রবের প্রশংসাসহ তাসবীহ পাঠ করো এবং তাঁর কাছে ক্ষমা চাও। নিশ্চয়ই তিনি তওবা কবুলকারী।"
-
-**সূরা আল-বাকারা (২:২৮৬)**
-"لَا يُكَلِّفُ اللَّهُ نَفْسًا إِلَّا وُسْعَهَا"
-"আল্লাহ কোনো ব্যক্তির উপর তার সাধ্যের অতিরিক্ত বোঝা চাপান না।"
-
-💡 যারা আন্তরিকভাবে তওবা করে, তাদের জন্য আল্লাহর ক্ষমা অসীম। তওবার দরজা সর্বদা খোলা।`;
+    if (bn && ayah.banglaTranslation) {
+      response += `"${ayah.banglaTranslation}"\n`;
+    } else if (!bn && ayah.englishTranslation) {
+      response += `"${ayah.englishTranslation}"\n`;
     }
-    return `📖 Forgiveness and Repentance in the Quran:
 
-**Surah An-Nasr (110:3)**
-"فَسَبِّحْ بِحَمْدِ رَبِّكَ وَاسْتَغْفِرْهُ ۚ إِنَّهُ كَانَ تَوَّابًا"
-"Then exalt with praise of your Lord and ask forgiveness of Him. Indeed, He is ever Accepting of repentance."
-
-💡 Allah's forgiveness is unlimited for those who sincerely repent.`;
-  }
-
-  if (q.includes("charity") || q.includes("zakat") || q.includes("sadaqah") || q.includes("দান") || q.includes("যাকাত") || q.includes("সাদাকা")) {
-    if (bn) {
-      return `📖 কুরআনে দান ও সদকা সম্পর্কে:
-
-**সূরা আল-বাকারা (২:৩)**
-"وَمِمَّا رَزَقْنَاهُمْ يُنْفِقُونَ"
-"...এবং আমি তাদেরকে যে রিযিক দিয়েছি তা থেকে ব্যয় করে।"
-
-**সূরা আদ-দুহা (৯৩:১০)**
-"وَأَمَّا السَّائِلَ فَلَا تَنْهَرْ"
-"আর প্রার্থীকে ধমক দিও না।"
-
-💡 দান সম্পদকে পবিত্র করে এবং ইসলামে ইবাদতের একটি মৌলিক অংশ।`;
+    // Show the other translation too
+    if (bn && ayah.englishTranslation) {
+      response += `(${ayah.englishTranslation})\n`;
+    } else if (!bn && ayah.banglaTranslation) {
+      response += `(${ayah.banglaTranslation})\n`;
     }
-    return `📖 Charity and Giving in the Quran:
 
-**Surah Al-Baqarah (2:3)**
-"وَمِمَّا رَزَقْنَاهُمْ يُنْفِقُونَ"
-"...and spend out of what We have provided for them."
-
-**Surah Ad-Duha (93:10)**
-"وَأَمَّا السَّائِلَ فَلَا تَنْهَرْ"
-"And as for the petitioner, do not repel him."
-
-💡 Charity purifies wealth and is a fundamental act of worship in Islam.`;
+    response += "\n";
   }
 
-  // Default response
-  if (bn) {
-    return `📖 আপনার প্রশ্নের জন্য ধন্যবাদ: "${question}"
+  response += bn
+    ? `💡 মোট ${topResults.length}টি প্রাসঙ্গিক আয়াত পাওয়া গেছে। আরও নির্দিষ্ট শব্দ ব্যবহার করলে আরও সঠিক ফলাফল পাবেন।`
+    : `💡 Found ${topResults.length} relevant verse(s). Use more specific keywords for better results.`;
 
-কুরআনের শিক্ষার ভিত্তিতে কিছু প্রাসঙ্গিক আয়াত:
-
-**সূরা আল-বাকারা (২:২)**
-"ذَٰلِكَ الْكِتَابُ لَا رَيْبَ فِيهِ هُدًى لِلْمُتَّقِينَ"
-"এটি সেই কিতাব, এতে কোন সন্দেহ নেই, মুত্তাকীদের জন্য পথনির্দেশ।"
-
-**সূরা আদ-দুহা (৯৩:৫)**
-"وَلَسَوْفَ يُعْطِيكَ رَبُّكَ فَتَرْضَىٰ"
-"আর অচিরেই তোমার রব তোমাকে দেবেন, ফলে তুমি সন্তুষ্ট হবে।"
-
-💡 আরও বিস্তারিত উত্তরের জন্য Lovable Cloud সংযুক্ত করে সম্পূর্ণ AI সহকারী সক্রিয় করুন।
-
-আপনি ধৈর্য, রহমত, নামাজ, ক্ষমা, বা দান সম্পর্কে জিজ্ঞেস করতে পারেন।`;
-  }
-
-  return `📖 Thank you for your question about: "${question}"
-
-Based on the Quran's teachings, here are some relevant verses:
-
-**Surah Al-Baqarah (2:2)**
-"ذَٰلِكَ الْكِتَابُ لَا رَيْبَ فِيهِ هُدًى لِلْمُتَّقِينَ"
-"This is the Book about which there is no doubt, a guidance for those conscious of Allah."
-
-**Surah Ad-Duha (93:5)**
-"وَلَسَوْفَ يُعْطِيكَ رَبُّكَ فَتَرْضَىٰ"
-"And your Lord is going to give you, and you will be satisfied."
-
-💡 To get more detailed answers, connect Lovable Cloud for the full AI assistant.
-
-Try searching for: patience, mercy, prayer, forgiveness, or charity.`;
+  return response;
 }

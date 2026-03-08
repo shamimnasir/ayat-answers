@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Search, X, Loader2 } from "lucide-react";
-import { searchCachedAyahs } from "@/lib/quranApi";
-import { searchAyahs } from "@/data/ayahs";
+import { searchCachedAyahs, searchQuranAPI, searchQuranAPIBangla } from "@/lib/quranApi";
 import { surahs } from "@/data/surahs";
 import { Ayah } from "@/types/quran";
 
@@ -9,41 +8,76 @@ interface SearchScreenProps {
   onSelectSurah: (surahId: number) => void;
 }
 
+function isBangla(text: string): boolean {
+  const banglaChars = text.match(/[\u0980-\u09FF]/g);
+  return banglaChars !== null && banglaChars.length >= 2;
+}
+
 export default function SearchScreen({ onSelectSurah }: SearchScreenProps) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Ayah[]>([]);
   const [searched, setSearched] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleSearch = (q: string) => {
+  const handleSearch = async (q: string) => {
     setQuery(q);
-    if (q.trim().length >= 2) {
-      // Search both cached API data and local fallback data
-      const cachedResults = searchCachedAyahs(q.trim());
-      const localResults = searchAyahs(q.trim());
+    if (q.trim().length < 2) {
+      setResults([]);
+      setSearched(false);
+      return;
+    }
 
-      // Merge and deduplicate by id
-      const seen = new Set<number>();
+    setLoading(true);
+    setSearched(true);
+
+    try {
+      // Search cached data first (instant)
+      const cachedResults = searchCachedAyahs(q.trim());
+
+      // Show cached results immediately
+      setResults(cachedResults);
+
+      // Then search the API for comprehensive results
+      const bn = isBangla(q.trim());
+      let apiResults: Ayah[] = [];
+
+      if (bn) {
+        apiResults = await searchQuranAPIBangla(q.trim());
+      } else {
+        apiResults = await searchQuranAPI(q.trim());
+      }
+
+      // Merge and deduplicate
+      const seen = new Set<string>();
       const merged: Ayah[] = [];
-      for (const a of [...cachedResults, ...localResults]) {
-        if (!seen.has(a.id)) {
-          seen.add(a.id);
+      for (const a of [...cachedResults, ...apiResults]) {
+        const key = `${a.surahId}-${a.ayahNumber}`;
+        if (!seen.has(key)) {
+          seen.add(key);
           merged.push(a);
         }
       }
+
       setResults(merged.slice(0, 50));
-      setSearched(true);
-    } else {
-      setResults([]);
-      setSearched(false);
+    } catch (e) {
+      console.error("Search error:", e);
+      // Keep cached results if API fails
+    } finally {
+      setLoading(false);
     }
   };
 
   const getSurahName = (surahId: number) => {
     const s = surahs.find(su => su.id === surahId);
-    return s ? s.nameEnglish : "";
+    return s ? s.nameEnglish : `Surah ${surahId}`;
   };
 
-  const suggestions = ["Mercy", "Patience", "Prayer", "Forgiveness", "Guidance", "Peace", "ধৈর্য", "রহমত"];
+  const getSurahNameBangla = (surahId: number) => {
+    const s = surahs.find(su => su.id === surahId);
+    return s ? s.nameBangla : "";
+  };
+
+  const suggestions = ["Mercy", "Patience", "Prayer", "Forgiveness", "Guidance", "Peace", "ধৈর্য", "রহমত", "Al-Aqsa", "Moses", "Jesus", "Mary"];
 
   return (
     <div className="px-4 pb-24">
@@ -54,20 +88,24 @@ export default function SearchScreen({ onSelectSurah }: SearchScreenProps) {
           <input
             type="text"
             value={query}
-            onChange={(e) => handleSearch(e.target.value)}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSearch(query)}
             placeholder="Search in Arabic, English, or Bangla..."
             className="w-full pl-11 pr-10 py-3 rounded-xl bg-muted border border-border focus:border-primary focus:ring-1 focus:ring-primary outline-none text-sm transition-colors"
           />
-          {query && (
-            <button onClick={() => handleSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2">
+          {query ? (
+            <button onClick={() => { setQuery(""); setResults([]); setSearched(false); }} className="absolute right-3 top-1/2 -translate-y-1/2">
               <X className="w-4 h-4 text-muted-foreground" />
             </button>
-          )}
+          ) : null}
         </div>
-        {searched && (
-          <p className="text-xs text-muted-foreground mt-2">
-            💡 Search works across surahs you've already read. Open more surahs to expand search coverage.
-          </p>
+        {query.trim().length >= 2 && (
+          <button
+            onClick={() => handleSearch(query)}
+            className="w-full mt-2 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity"
+          >
+            {loading ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : "Search the entire Quran"}
+          </button>
         )}
       </div>
 
@@ -79,7 +117,7 @@ export default function SearchScreen({ onSelectSurah }: SearchScreenProps) {
             {suggestions.map(s => (
               <button
                 key={s}
-                onClick={() => handleSearch(s)}
+                onClick={() => { setQuery(s); handleSearch(s); }}
                 className="px-3 py-1.5 rounded-full bg-accent text-accent-foreground text-sm hover:bg-primary hover:text-primary-foreground transition-colors"
               >
                 {s}
@@ -92,33 +130,49 @@ export default function SearchScreen({ onSelectSurah }: SearchScreenProps) {
       {/* Results */}
       {searched && (
         <div className="mt-4">
-          <p className="text-xs text-muted-foreground mb-3">
-            {results.length} result{results.length !== 1 ? "s" : ""} found
-          </p>
-          {results.length === 0 ? (
+          <div className="flex items-center gap-2 mb-3">
+            <p className="text-xs text-muted-foreground">
+              {results.length} result{results.length !== 1 ? "s" : ""} found
+              {loading && " (searching...)"}
+            </p>
+            {loading && <Loader2 className="w-3 h-3 animate-spin text-gold" />}
+          </div>
+          {results.length === 0 && !loading ? (
             <div className="text-center py-12">
               <p className="text-muted-foreground">No verses found for "{query}"</p>
-              <p className="text-xs text-muted-foreground mt-1">Try different keywords or read more surahs to expand search</p>
+              <p className="text-xs text-muted-foreground mt-1">Try different keywords or check your internet connection</p>
             </div>
           ) : (
             <div className="space-y-3">
-              {results.map(ayah => (
+              {results.map((ayah, idx) => (
                 <button
-                  key={`${ayah.surahId}-${ayah.ayahNumber}`}
+                  key={`${ayah.surahId}-${ayah.ayahNumber}-${idx}`}
                   onClick={() => onSelectSurah(ayah.surahId)}
                   className="verse-card w-full text-left animate-fade-in"
                 >
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className="flex items-center gap-2 mb-2 flex-wrap">
                     <span className="text-xs bg-accent px-2 py-0.5 rounded-full text-gold font-semibold">
                       {getSurahName(ayah.surahId)} {ayah.surahId}:{ayah.ayahNumber}
                     </span>
+                    <span className="text-xs text-muted-foreground font-bangla">
+                      {getSurahNameBangla(ayah.surahId)}
+                    </span>
                   </div>
-                  <p className="font-arabic text-right text-lg leading-relaxed mb-2 text-foreground">
-                    {ayah.arabicText}
-                  </p>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    {ayah.englishTranslation}
-                  </p>
+                  {ayah.arabicText && (
+                    <p className="font-arabic text-right text-lg leading-relaxed mb-2 text-foreground">
+                      {ayah.arabicText}
+                    </p>
+                  )}
+                  {ayah.englishTranslation && (
+                    <p className="text-xs text-muted-foreground leading-relaxed mb-1">
+                      {ayah.englishTranslation}
+                    </p>
+                  )}
+                  {ayah.banglaTranslation && (
+                    <p className="text-xs text-muted-foreground leading-relaxed font-bangla">
+                      {ayah.banglaTranslation}
+                    </p>
+                  )}
                 </button>
               ))}
             </div>
