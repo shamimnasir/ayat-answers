@@ -30,7 +30,7 @@ const Index = () => {
     <div className="min-h-screen bg-background max-w-lg mx-auto relative">
       {/* Top bar */}
       {screen !== "reader" && (
-        <header className="sticky top-0 z-20 bg-background/95 backdrop-blur-sm border-b border-border px-4 py-3">
+        <header className="sticky top-0 z-20 bg-background/95 backdrop-blur-sm border-b border-border px-4 py-3 pt-[calc(0.75rem+env(safe-area-inset-top))] pl-[calc(1rem+env(safe-area-inset-left))] pr-[calc(1rem+env(safe-area-inset-right))]">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-lg font-semibold gold-text-gradient">القرآن الكريم</h1>
@@ -122,7 +122,7 @@ const Index = () => {
 
       {/* Bottom nav */}
       {screen !== "reader" && (
-        <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-lg bg-background/95 backdrop-blur-sm border-t border-border px-2 py-2 z-20">
+        <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-lg bg-background/95 backdrop-blur-sm border-t border-border px-2 py-2 z-20 pb-[calc(0.5rem+env(safe-area-inset-bottom))] pl-[calc(0.5rem+env(safe-area-inset-left))] pr-[calc(0.5rem+env(safe-area-inset-right))]">
           <div className="flex items-center justify-around">
             {navItems.map(item => {
               const active = screen === item.id;
