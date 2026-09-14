@@ -8,6 +8,19 @@ interface AIAssistantProps {
   onSelectSurah?: (surahId: number) => void;
 }
 
+/**
+ * Renders **bold** spans in assistant copy. The intro message is written in
+ * markdown but the bubble uses whitespace-pre-wrap, so without this the
+ * asterisks show up literally on screen.
+ */
+function renderBold(text: string) {
+  return text.split(/(\*\*[^*]+\*\*)/g).map((part, i) =>
+    part.startsWith("**") && part.endsWith("**") && part.length > 4
+      ? <strong key={i} className="font-semibold">{part.slice(2, -2)}</strong>
+      : <span key={i}>{part}</span>
+  );
+}
+
 interface Message {
   role: "user" | "assistant";
   content: string;
@@ -83,7 +96,7 @@ export default function AIAssistant({ onSelectSurah }: AIAssistantProps) {
                   ? "bg-primary text-primary-foreground rounded-br-md"
                   : "bg-muted text-foreground rounded-bl-md"
               }`}>
-                {msg.content}
+                {renderBold(msg.content)}
               </div>
               {/* Clickable verse cards */}
               {msg.verses && msg.verses.length > 0 && onSelectSurah && (
@@ -221,7 +234,7 @@ async function generateResponse(question: string): Promise<{ response: string; v
   const bn = isBangla(question);
   const keywords = extractKeywords(question);
 
-  let allResults: Ayah[] = [];
+  const allResults: Ayah[] = [];
 
   // Search with full question, combined keywords, and individual keywords
   const searchTerms = [

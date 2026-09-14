@@ -87,3 +87,44 @@ https://ayat-answers.lovable.app/privacy-policy.html
 **Note:** Google Play requires minimum 2 screenshots, recommended 4-8.
 
 **💡 TIP:** For best results, take real screenshots from your app on a phone instead of using AI-generated mockups. Open https://ayat-answers.lovable.app on your phone, take screenshots of each screen, and upload those.
+
+---
+
+## Store assets (regenerated 2026-09-14)
+
+The previous `screenshot-*.png` and `feature-graphic.png` in this folder were
+AI-generated mockups containing meaningless text — fabricated pseudo-Arabic made
+to look like scripture, and captions such as "Bismillrah Dfrom Quaah" and
+"Cehtzil|Xuen Uirum". They never depicted the real app. They were not uploaded
+to the live listing (the three screenshots live on Play were genuine), but they
+have been deleted so nobody ships them by mistake.
+
+Everything here is now captured from the running app, or drawn from real text:
+
+| File | What it is |
+|---|---|
+| `screenshot-1-home.png` | Home, Ayah of the Day |
+| `screenshot-2-surahs.png` | Surah list |
+| `screenshot-3-reader-pronunciation.png` | Reader with the pronunciation line |
+| `screenshot-4-ai-search.png` | AI search with suggestions |
+| `feature-graphic.png` | Built from `feature-graphic.html` |
+
+All screenshots are 1080x1920 (9:16), above Play's 1080 px promotion threshold.
+The feature graphic is 1024x500 as Play requires.
+
+### Regenerating
+
+Screenshots are captured from a real build, so rebuild and serve first:
+
+```bash
+npm run build && npx vite preview --port 4174 --strictPort   # in one shell
+node scripts/capture-store-screenshots.js ./out              # in another
+node scripts/capture-feature-graphic.js \
+  "$PWD/public/play-store/feature-graphic.html" out/feature-graphic.png 1024 500
+```
+
+Both scripts drive the installed Google Chrome through `puppeteer-core`, which
+is intentionally not a dependency of this project — install it ad hoc when you
+need to regenerate. Screenshots render at 360x640 CSS with a 3x device pixel
+ratio, which produces a true 1080x1920 image that lays out like a phone rather
+than a 1080 px wide desktop window.
