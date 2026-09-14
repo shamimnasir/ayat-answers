@@ -44,7 +44,7 @@ const Index = () => {
       {/* Content */}
       <main className="min-h-[calc(100vh-7rem)]">
         {screen === "home" && (
-          <div className="px-4 py-6 space-y-6 pb-24">
+          <div className="px-4 py-6 space-y-6 pb-24 pb-[calc(6rem+env(safe-area-inset-bottom))]">
             {/* Welcome */}
             <div className="text-center py-4">
               <p className="font-arabic text-3xl text-gold mb-2">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</p>

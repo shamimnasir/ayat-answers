@@ -39,7 +39,7 @@ export default function BookmarksScreen({ onSelectSurah }: BookmarksScreenProps)
   }
 
   return (
-    <div className="px-4 pb-24 space-y-3">
+    <div className="px-4 pb-24 space-y-3 pb-[calc(6rem+env(safe-area-inset-bottom))]">
       <p className="text-xs text-muted-foreground uppercase tracking-wider pt-4 pb-2">
         {bookmarks.length} bookmark{bookmarks.length !== 1 ? "s" : ""}
       </p>
