@@ -1,7 +1,44 @@
 import { Ayah } from "@/types/quran";
+import { loadAllEditions, getVerses, isEditionLoaded } from "@/lib/quranData";
+import { surahs } from "@/data/surahs";
 
 const CACHE_PREFIX = "quran-surah-";
 const API_BASE = "https://api.alquran.cloud/v1";
+
+/**
+ * Running total of ayahs before each surah, so a local verse can be given the
+ * same global id (1-6236) the API would have assigned it. Bookmarks and search
+ * results key off this, so it has to agree with the API's numbering.
+ */
+const AYAH_OFFSETS: number[] = (() => {
+  const offsets = [0];
+  for (let i = 0; i < surahs.length; i++) offsets.push(offsets[i] + surahs[i].totalAyahs);
+  return offsets;
+})();
+
+function globalAyahId(surahId: number, ayahNumber: number): number {
+  return (AYAH_OFFSETS[surahId - 1] ?? 0) + ayahNumber;
+}
+
+/** Build a surah from the bundled editions. Returns null if they aren't loaded. */
+function buildFromLocal(surahId: number): Ayah[] | null {
+  const arabic = getVerses("arabic", surahId);
+  if (!arabic) return null;
+  const en = getVerses("en", surahId);
+  const bn = getVerses("bn", surahId);
+  const tr = getVerses("translit", surahId);
+
+  return arabic.map((text, i) => ({
+    id: globalAyahId(surahId, i + 1),
+    surahId,
+    ayahNumber: i + 1,
+    arabicText: text,
+    englishTranslation: en?.[i] ?? "",
+    banglaTranslation: bn?.[i] ?? "",
+    transliteration: tr?.[i] ?? "",
+    juzNumber: 0,
+  }));
+}
 
 interface AlQuranAyah {
   number: number;
@@ -37,43 +74,45 @@ async function fetchEdition(surahId: number, edition: string): Promise<AlQuranAy
   return data.data.ayahs;
 }
 
-// Fetch complete surah with Arabic + English + Bangla
+// Complete surah with Arabic + transliteration + English + Bangla.
+// Served from the bundled text; the API is only a fallback if the bundle is
+// unreachable (which also means the app is offline, so it will usually fail too).
 export async function fetchCompleteSurah(surahId: number): Promise<Ayah[]> {
-  const cached = localStorage.getItem(CACHE_PREFIX + surahId);
-  if (cached) {
-    try {
-      return JSON.parse(cached);
-    } catch {
-      // Cache corrupted, re-fetch
-    }
+  try {
+    await loadAllEditions();
+    const local = buildFromLocal(surahId);
+    if (local) return local;
+  } catch (e) {
+    console.warn("Bundled Quran text unavailable, falling back to API:", e);
   }
 
-  const [arabicAyahs, englishAyahs, banglaAyahs] = await Promise.all([
+  const [arabicAyahs, englishAyahs, banglaAyahs, translitAyahs] = await Promise.all([
     fetchEdition(surahId, "quran-uthmani"),
     fetchEdition(surahId, "en.sahih"),
     fetchEdition(surahId, "bn.bengali"),
+    fetchEdition(surahId, "en.transliteration").catch(() => [] as AlQuranAyah[]),
   ]);
 
-  const ayahs: Ayah[] = arabicAyahs.map((ar, i) => ({
+  return arabicAyahs.map((ar, i) => ({
     id: ar.number,
     surahId,
     ayahNumber: ar.numberInSurah,
     arabicText: ar.text,
     englishTranslation: englishAyahs[i]?.text || "",
     banglaTranslation: banglaAyahs[i]?.text || "",
+    transliteration: translitAyahs[i]?.text || "",
     juzNumber: ar.juz,
   }));
+}
 
+/** Warm the bundled text. Safe to call repeatedly; resolves even on failure. */
+export async function preloadQuranText(): Promise<boolean> {
   try {
-    localStorage.setItem(CACHE_PREFIX + surahId, JSON.stringify(ayahs));
+    await loadAllEditions();
+    return true;
   } catch {
-    clearOldestCache();
-    try {
-      localStorage.setItem(CACHE_PREFIX + surahId, JSON.stringify(ayahs));
-    } catch { /* ignore */ }
+    return false;
   }
-
-  return ayahs;
 }
 
 // Search the Quran API directly for a keyword (English edition)
@@ -98,7 +137,7 @@ export async function searchQuranAPI(query: string): Promise<Ayah[]> {
       const ayahNum = match.numberInSurah;
 
       // Check if we have cached data for this surah
-      let cachedSurah = getCachedSurah(surahId);
+      const cachedSurah = getCachedSurah(surahId);
 
       if (cachedSurah) {
         const found = cachedSurah.find(a => a.ayahNumber === ayahNum);
@@ -186,10 +225,14 @@ export async function searchQuranAPIBangla(query: string): Promise<Ayah[]> {
 }
 
 export function isSurahCached(surahId: number): boolean {
+  if (isEditionLoaded("arabic")) return true;
   return localStorage.getItem(CACHE_PREFIX + surahId) !== null;
 }
 
 export function getCachedSurah(surahId: number): Ayah[] | null {
+  const local = buildFromLocal(surahId);
+  if (local) return local;
+
   const cached = localStorage.getItem(CACHE_PREFIX + surahId);
   if (!cached) return null;
   try {
@@ -199,26 +242,50 @@ export function getCachedSurah(surahId: number): Ayah[] | null {
   }
 }
 
+/** Built once from the bundle; 6236 objects is too many to rebuild per call. */
+let allAyahsMemo: Ayah[] | null = null;
+
 export function getAllCachedAyahs(): Ayah[] {
+  if (isEditionLoaded("arabic")) {
+    if (!allAyahsMemo) {
+      const all: Ayah[] = [];
+      for (let i = 1; i <= 114; i++) {
+        const s = buildFromLocal(i);
+        if (s) all.push(...s);
+      }
+      allAyahsMemo = all;
+    }
+    return allAyahsMemo;
+  }
+
   const all: Ayah[] = [];
   for (let i = 1; i <= 114; i++) {
-    const cached = getCachedSurah(i);
-    if (cached) all.push(...cached);
+    const cached = localStorage.getItem(CACHE_PREFIX + i);
+    if (!cached) continue;
+    try {
+      all.push(...JSON.parse(cached));
+    } catch { /* skip corrupted entry */ }
   }
   return all;
 }
 
+// Searches the bundled text, so this now covers the whole Quran offline
+// instead of only the surahs the reader happened to have opened.
 export function searchCachedAyahs(query: string): Ayah[] {
-  const q = query.toLowerCase();
+  const needle = query.trim();
+  if (!needle) return [];
+  const q = needle.toLowerCase();
   return getAllCachedAyahs().filter(a =>
-    a.arabicText.includes(query) ||
+    a.arabicText.includes(needle) ||
     a.englishTranslation.toLowerCase().includes(q) ||
-    a.banglaTranslation.includes(query)
+    a.banglaTranslation.includes(needle) ||
+    (a.transliteration ?? "").toLowerCase().includes(q)
   ).slice(0, 50);
 }
 
-// Count how many surahs are cached
+// Count how many surahs are readable offline
 export function getCachedSurahCount(): number {
+  if (isEditionLoaded("arabic")) return 114;
   let count = 0;
   for (let i = 1; i <= 114; i++) {
     if (localStorage.getItem(CACHE_PREFIX + i)) count++;
@@ -226,13 +293,3 @@ export function getCachedSurahCount(): number {
   return count;
 }
 
-function clearOldestCache() {
-  let cleared = 0;
-  for (let i = 1; i <= 114 && cleared < 10; i++) {
-    const key = CACHE_PREFIX + i;
-    if (localStorage.getItem(key)) {
-      localStorage.removeItem(key);
-      cleared++;
-    }
-  }
-}

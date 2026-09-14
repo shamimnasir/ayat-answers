@@ -14,6 +14,8 @@ export interface Ayah {
   arabicText: string;
   englishTranslation: string;
   banglaTranslation: string;
+  /** Latin-script pronunciation guide. Empty when unavailable. */
+  transliteration?: string;
   juzNumber: number;
 }
 

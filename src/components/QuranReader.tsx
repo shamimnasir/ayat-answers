@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft, Bookmark, BookmarkCheck, Copy, Share2, ChevronUp, ChevronDown, Loader2, WifiOff } from "lucide-react";
+import { ArrowLeft, Bookmark, BookmarkCheck, Copy, Share2, ChevronUp, ChevronDown, Loader2, WifiOff, Languages } from "lucide-react";
 import { surahs } from "@/data/surahs";
 import { isBookmarked, addBookmark, removeBookmark } from "@/lib/bookmarks";
 import { fetchCompleteSurah } from "@/lib/quranApi";
@@ -11,13 +11,32 @@ interface QuranReaderProps {
   onBack: () => void;
 }
 
+const TRANSLITERATION_PREF = "quran-show-transliteration";
+
 export default function QuranReader({ surahId, onBack }: QuranReaderProps) {
   const surah = surahs.find(s => s.id === surahId);
   const [ayahsList, setAyahsList] = useState<Ayah[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [fontSize, setFontSize] = useState(28);
+  const [showTransliteration, setShowTransliteration] = useState(() => {
+    try {
+      return localStorage.getItem(TRANSLITERATION_PREF) !== "0";
+    } catch {
+      return true;
+    }
+  });
   const [, forceUpdate] = useState(0);
+
+  const toggleTransliteration = () => {
+    setShowTransliteration((on) => {
+      const next = !on;
+      try {
+        localStorage.setItem(TRANSLITERATION_PREF, next ? "1" : "0");
+      } catch { /* private mode - preference just won't persist */ }
+      return next;
+    });
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -83,10 +102,19 @@ export default function QuranReader({ surahId, onBack }: QuranReaderProps) {
             <p className="font-arabic text-gold text-lg leading-tight">{surah.nameArabic}</p>
           </div>
           <div className="flex items-center gap-1">
-            <button onClick={() => setFontSize(s => Math.min(s + 2, 40))} className="p-1.5 rounded hover:bg-muted">
+            <button
+              onClick={toggleTransliteration}
+              aria-pressed={showTransliteration}
+              aria-label={showTransliteration ? "Hide pronunciation" : "Show pronunciation"}
+              title={showTransliteration ? "Hide pronunciation" : "Show pronunciation"}
+              className={`p-1.5 rounded hover:bg-muted transition-colors ${showTransliteration ? "text-gold" : "text-muted-foreground"}`}
+            >
+              <Languages className="w-4 h-4" />
+            </button>
+            <button onClick={() => setFontSize(s => Math.min(s + 2, 40))} className="p-1.5 rounded hover:bg-muted" aria-label="Increase text size">
               <ChevronUp className="w-4 h-4" />
             </button>
-            <button onClick={() => setFontSize(s => Math.max(s - 2, 20))} className="p-1.5 rounded hover:bg-muted">
+            <button onClick={() => setFontSize(s => Math.max(s - 2, 20))} className="p-1.5 rounded hover:bg-muted" aria-label="Decrease text size">
               <ChevronDown className="w-4 h-4" />
             </button>
           </div>
@@ -164,9 +192,16 @@ export default function QuranReader({ surahId, onBack }: QuranReaderProps) {
                 </div>
 
                 {/* Arabic */}
-                <p className="font-arabic text-right leading-loose mb-4 text-foreground" style={{ fontSize: `${fontSize}px` }}>
+                <p className="font-arabic text-right leading-loose mb-3 text-foreground" style={{ fontSize: `${fontSize}px` }}>
                   {ayah.arabicText}
                 </p>
+
+                {/* Pronunciation */}
+                {showTransliteration && ayah.transliteration && (
+                  <p className="text-sm text-gold/90 italic leading-relaxed mb-3 font-body">
+                    {ayah.transliteration}
+                  </p>
+                )}
 
                 {/* English */}
                 <p className="text-sm text-muted-foreground leading-relaxed mb-2 font-body">
