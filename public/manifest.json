@@ -4,7 +4,7 @@
   "description": "Read the Holy Quran with Arabic text, English & Bangla translations, AI-powered search, and bookmarks.",
   "start_url": "/",
   "display": "standalone",
-  "orientation": "portrait",
+  "orientation": "any",
   "background_color": "#0c1a0f",
   "theme_color": "#1a3a2a",
   "lang": "en",

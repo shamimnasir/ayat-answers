@@ -1,5 +1,4 @@
 import { surahs } from "@/data/surahs";
-import { getAyahsBySurah } from "@/data/ayahs";
 
 interface SurahListProps {
   onSelectSurah: (surahId: number) => void;
@@ -9,9 +8,6 @@ export default function SurahList({ onSelectSurah }: SurahListProps) {
   return (
     <div className="space-y-2 px-4 pb-24 pb-[calc(6rem+env(safe-area-inset-bottom))]">
       {surahs.map((surah) => {
-        const ayahCount = getAyahsBySurah(surah.id).length;
-        const hasData = ayahCount > 0;
-
         return (
           <button
             key={surah.id}
@@ -37,12 +33,6 @@ export default function SurahList({ onSelectSurah }: SurahListProps) {
                 <span className={`text-xs ${surah.revelationType === 'Meccan' ? 'text-emerald-brand' : 'text-gold'}`}>
                   {surah.revelationType}
                 </span>
-                {hasData && (
-                  <>
-                    <span className="text-xs text-muted-foreground">•</span>
-                    <span className="text-xs text-emerald-brand">✓ Available</span>
-                  </>
-                )}
               </div>
             </div>
           </button>
