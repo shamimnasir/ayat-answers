@@ -69,7 +69,7 @@ export default function AIAssistant({ onSelectSurah }: AIAssistantProps) {
 
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)]">
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-4 scrollbar-thin">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-4 scrollbar-thin pb-[calc(6rem+env(safe-area-inset-bottom))]">
         {messages.map((msg, i) => (
           <div key={i} className={`flex gap-3 animate-fade-in ${msg.role === "user" ? "justify-end" : ""}`}>
             {msg.role === "assistant" && (
@@ -156,7 +156,7 @@ export default function AIAssistant({ onSelectSurah }: AIAssistantProps) {
         )}
       </div>
 
-      <div className="px-4 py-3 border-t border-border bg-background">
+      <div className="px-4 py-3 border-t border-border bg-background pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
         <div className="flex gap-2">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />

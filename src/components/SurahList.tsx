@@ -7,7 +7,7 @@ interface SurahListProps {
 
 export default function SurahList({ onSelectSurah }: SurahListProps) {
   return (
-    <div className="space-y-2 px-4 pb-24">
+    <div className="space-y-2 px-4 pb-24 pb-[calc(6rem+env(safe-area-inset-bottom))]">
       {surahs.map((surah) => {
         const ayahCount = getAyahsBySurah(surah.id).length;
         const hasData = ayahCount > 0;
