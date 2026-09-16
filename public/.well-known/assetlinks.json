@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "procreators.io.alquran",
+      "sha256_cert_fingerprints": [
+        "11:D5:2C:6A:57:A7:9F:F3:0B:5E:37:C5:71:46:40:B1:88:A9:1E:51:85:26:06:C5:B2:AB:0D:85:06:4C:D9:94"
+      ]
+    }
+  }
+]
