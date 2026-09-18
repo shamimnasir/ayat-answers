@@ -1,6 +1,7 @@
 import { Ayah } from "@/types/quran";
 import { loadAllEditions, getVerses, isEditionLoaded } from "@/lib/quranData";
 import { surahs } from "@/data/surahs";
+import { getBengaliPhonetics } from "@/lib/bengaliPhonetics";
 
 const CACHE_PREFIX = "quran-surah-";
 const API_BASE = "https://api.alquran.cloud/v1";
@@ -36,6 +37,7 @@ function buildFromLocal(surahId: number): Ayah[] | null {
     englishTranslation: en?.[i] ?? "",
     banglaTranslation: bn?.[i] ?? "",
     transliteration: tr?.[i] ?? "",
+    bengaliTransliteration: getBengaliPhonetics(text, tr?.[i]),
     juzNumber: 0,
   }));
 }
@@ -101,6 +103,7 @@ export async function fetchCompleteSurah(surahId: number): Promise<Ayah[]> {
     englishTranslation: englishAyahs[i]?.text || "",
     banglaTranslation: banglaAyahs[i]?.text || "",
     transliteration: translitAyahs[i]?.text || "",
+    bengaliTransliteration: getBengaliPhonetics(ar.text, translitAyahs[i]?.text),
     juzNumber: ar.juz,
   }));
 }
@@ -292,4 +295,3 @@ export function getCachedSurahCount(): number {
   }
   return count;
 }
-

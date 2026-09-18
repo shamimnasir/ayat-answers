@@ -16,6 +16,8 @@ export interface Ayah {
   banglaTranslation: string;
   /** Latin-script pronunciation guide. Empty when unavailable. */
   transliteration?: string;
+  /** Bengali-script pronunciation guide, generated from the Arabic text. */
+  bengaliTransliteration?: string;
   juzNumber: number;
 }
 

@@ -5,13 +5,15 @@ import { isBookmarked, addBookmark, removeBookmark } from "@/lib/bookmarks";
 import { fetchCompleteSurah } from "@/lib/quranApi";
 import { Ayah } from "@/types/quran";
 import { toast } from "sonner";
+import { getBengaliPhonetics } from "@/lib/bengaliPhonetics";
 
 interface QuranReaderProps {
   surahId: number;
   onBack: () => void;
 }
 
-const TRANSLITERATION_PREF = "quran-show-transliteration";
+const TRANSLITERATION_PREF = "quran-pronunciation-mode";
+type PronunciationMode = "off" | "english" | "bengali";
 
 export default function QuranReader({ surahId, onBack }: QuranReaderProps) {
   const surah = surahs.find(s => s.id === surahId);
@@ -19,20 +21,23 @@ export default function QuranReader({ surahId, onBack }: QuranReaderProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [fontSize, setFontSize] = useState(28);
-  const [showTransliteration, setShowTransliteration] = useState(() => {
+  const [pronunciationMode, setPronunciationMode] = useState<PronunciationMode>(() => {
     try {
-      return localStorage.getItem(TRANSLITERATION_PREF) !== "0";
+      const saved = localStorage.getItem(TRANSLITERATION_PREF);
+      if (saved === "off" || saved === "english" || saved === "bengali") return saved;
+      // Migrate the v1 boolean preference: enabled meant English.
+      return localStorage.getItem("quran-show-transliteration") === "0" ? "off" : "english";
     } catch {
-      return true;
+      return "english";
     }
   });
   const [, forceUpdate] = useState(0);
 
-  const toggleTransliteration = () => {
-    setShowTransliteration((on) => {
-      const next = !on;
+  const cyclePronunciation = () => {
+    setPronunciationMode((mode) => {
+      const next: PronunciationMode = mode === "off" ? "english" : mode === "english" ? "bengali" : "off";
       try {
-        localStorage.setItem(TRANSLITERATION_PREF, next ? "1" : "0");
+        localStorage.setItem(TRANSLITERATION_PREF, next);
       } catch { /* private mode - preference just won't persist */ }
       return next;
     });
@@ -103,11 +108,10 @@ export default function QuranReader({ surahId, onBack }: QuranReaderProps) {
           </div>
           <div className="flex items-center gap-1">
             <button
-              onClick={toggleTransliteration}
-              aria-pressed={showTransliteration}
-              aria-label={showTransliteration ? "Hide pronunciation" : "Show pronunciation"}
-              title={showTransliteration ? "Hide pronunciation" : "Show pronunciation"}
-              className={`p-1.5 rounded hover:bg-muted transition-colors ${showTransliteration ? "text-gold" : "text-muted-foreground"}`}
+              onClick={cyclePronunciation}
+              aria-label={`Pronunciation: ${pronunciationMode}. Click to switch language`}
+              title={`Pronunciation: ${pronunciationMode}`}
+              className={`p-1.5 rounded hover:bg-muted transition-colors ${pronunciationMode !== "off" ? "text-gold" : "text-muted-foreground"}`}
             >
               <Languages className="w-4 h-4" />
             </button>
@@ -192,19 +196,25 @@ export default function QuranReader({ surahId, onBack }: QuranReaderProps) {
                 </div>
 
                 {/* Arabic */}
-                <p className="font-arabic text-right leading-loose mb-3 text-foreground" style={{ fontSize: `${fontSize}px` }}>
+                <p className="font-arabic quran-arabic text-right mb-4 text-foreground" style={{ fontSize: `${fontSize}px` }} dir="rtl" lang="ar">
                   {ayah.arabicText}
                 </p>
 
                 {/* Pronunciation */}
-                {showTransliteration && ayah.transliteration && (
-                  <p className="text-sm text-gold/90 italic leading-relaxed mb-3 font-body">
+                {pronunciationMode === "english" && ayah.transliteration && (
+                  <p className="pronunciation-block text-sm text-gold/90 italic leading-relaxed mb-3 font-body">
                     {ayah.transliteration}
                   </p>
                 )}
 
+                {pronunciationMode === "bengali" && (
+                  <p className="pronunciation-block text-sm text-gold/90 leading-relaxed mb-3 font-bangla" lang="bn">
+                    {ayah.bengaliTransliteration || getBengaliPhonetics(ayah.arabicText)}
+                  </p>
+                )}
+
                 {/* English */}
-                <p className="text-sm text-muted-foreground leading-relaxed mb-2 font-body">
+                <p className="translation-block text-sm text-muted-foreground leading-relaxed mb-2 font-body" lang="en">
                   {ayah.englishTranslation}
                 </p>
 
