@@ -53,7 +53,7 @@ export default function BookmarksScreen({ onSelectSurah }: BookmarksScreenProps)
               <button onClick={() => onSelectSurah(bm.surahId)} className="text-xs bg-accent px-2 py-0.5 rounded-full text-gold font-semibold hover:bg-primary hover:text-primary-foreground transition-colors">
                 {surah?.nameEnglish} {bm.surahId}:{bm.ayahNumber}
               </button>
-              <button onClick={() => handleRemove(bm.surahId, bm.ayahNumber)} className="p-1.5 rounded hover:bg-destructive/10 transition-colors">
+              <button onClick={() => handleRemove(bm.surahId, bm.ayahNumber)} className="p-1.5 rounded hover:bg-destructive/10 transition-colors" aria-label={`Remove bookmark for ${surah?.nameEnglish ?? "verse"} ${bm.ayahNumber}`}>
                 <Trash2 className="w-4 h-4 text-muted-foreground" />
               </button>
             </div>

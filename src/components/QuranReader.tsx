@@ -99,7 +99,7 @@ export default function QuranReader({ surahId, onBack }: QuranReaderProps) {
       {/* Header */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border px-4 py-3">
         <div className="flex items-center gap-3">
-          <button onClick={onBack} className="p-2 rounded-lg hover:bg-muted transition-colors">
+            <button onClick={onBack} className="p-2 rounded-lg hover:bg-muted transition-colors" aria-label="Back to surah list">
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div className="flex-1 text-center">
@@ -182,14 +182,14 @@ export default function QuranReader({ surahId, onBack }: QuranReaderProps) {
                   <div className="ayah-separator">
                     <span>{ayah.ayahNumber}</span>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <button onClick={() => handleBookmark(ayah.ayahNumber)} className="p-1.5 rounded hover:bg-muted transition-colors">
+                <div className="flex items-center gap-1">
+                    <button onClick={() => handleBookmark(ayah.ayahNumber)} className="p-1.5 rounded hover:bg-muted transition-colors" aria-label={bookmarked ? "Remove bookmark" : "Bookmark verse"}>
                       {bookmarked ? <BookmarkCheck className="w-4 h-4 text-gold" /> : <Bookmark className="w-4 h-4 text-muted-foreground" />}
                     </button>
-                    <button onClick={() => handleCopy(`${ayah.arabicText}\n${ayah.englishTranslation}`)} className="p-1.5 rounded hover:bg-muted transition-colors">
+                    <button onClick={() => handleCopy(`${ayah.arabicText}\n${ayah.englishTranslation}`)} className="p-1.5 rounded hover:bg-muted transition-colors" aria-label="Copy verse">
                       <Copy className="w-4 h-4 text-muted-foreground" />
                     </button>
-                    <button onClick={() => handleShare(ayah)} className="p-1.5 rounded hover:bg-muted transition-colors">
+                    <button onClick={() => handleShare(ayah)} className="p-1.5 rounded hover:bg-muted transition-colors" aria-label="Share verse">
                       <Share2 className="w-4 h-4 text-muted-foreground" />
                     </button>
                   </div>

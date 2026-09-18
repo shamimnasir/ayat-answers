@@ -185,6 +185,7 @@ export default function AIAssistant({ onSelectSurah }: AIAssistantProps) {
           <button
             onClick={() => handleSend()}
             disabled={!input.trim() || isLoading}
+            aria-label="Send question"
             className="p-3 rounded-xl bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-all"
           >
             <Send className="w-5 h-5" />

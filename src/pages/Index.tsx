@@ -26,15 +26,20 @@ const Index = () => {
     { id: "bookmarks" as Screen, icon: Bookmark, label: "Saved" },
   ];
 
+  const screenTitle = screen === "surahs" ? "সূরা তালিকা" : screen === "ai" ? "কুরআন সহকারী" : screen === "bookmarks" ? "সংরক্ষিত আয়াত" : "আল কোরআন";
+
   return (
     <div className="min-h-screen bg-background max-w-lg mx-auto relative">
       {/* Top bar */}
       {screen !== "reader" && (
         <header className="sticky top-0 z-20 bg-background/95 backdrop-blur-sm border-b border-border px-4 py-3 pt-[calc(0.75rem+env(safe-area-inset-top))] pl-[calc(1rem+env(safe-area-inset-left))] pr-[calc(1rem+env(safe-area-inset-right))]">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-lg font-semibold gold-text-gradient">القرآن الكريم</h1>
-              <p className="text-xs text-muted-foreground">The Holy Quran</p>
+            <div className="flex items-center gap-3 min-w-0">
+              <img src="/icon-192.png" alt="আল কোরআন" className="h-10 w-10 rounded-xl object-cover shadow-sm" />
+              <div className="min-w-0">
+                <h1 className="font-bangla text-lg font-semibold gold-text-gradient truncate">{screenTitle}</h1>
+                <p className="text-xs text-muted-foreground">The Holy Quran</p>
+              </div>
             </div>
             <ThemeToggle isDark={isDark} onToggle={toggleTheme} />
           </div>
@@ -133,6 +138,7 @@ const Index = () => {
                   className={`flex flex-col items-center gap-1 px-3 py-1.5 rounded-lg transition-colors ${
                     active ? "text-gold" : "text-muted-foreground hover:text-foreground"
                   }`}
+                  aria-current={active ? "page" : undefined}
                 >
                   <item.icon className="w-5 h-5" />
                   <span className="text-[10px] font-medium">{item.label}</span>

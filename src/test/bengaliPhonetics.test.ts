@@ -10,8 +10,8 @@ describe("Bengali phonetics", () => {
 
   it("handles Arabic diacritics without emitting Arabic marks", () => {
     const result = arabicToBengaliPhonetics("قُلْ هُوَ اللَّهُ أَحَدٌ", "Qul huwa Allaahu Ahad");
-    expect(result).toMatch(/[অ-হা]/u);
-    expect(result).not.toMatch(/[ًٌٍَُِّْٰ]/u);
+    expect(result).toMatch(/[\u0985-\u09B9]/u);
+    expect(result).not.toMatch(/[\u064B-\u065F\u0670]/u);
   });
 
   it("does not return an empty value for a real verse", () => {

@@ -56,9 +56,9 @@ function fallbackWord(value: string): string {
     .replace(/j/gu, "জ").replace(/g/gu, "গ").replace(/h/gu, "হ")
     .replace(/c/gu, "ক").replace(/k/gu, "ক").replace(/y/gu, "য়").replace(/'/gu, "");
   // Bengali vowel signs cannot begin a word; use their independent forms.
-  return result.replace(/([ক-হয়])আ/gu, "$1া").replace(/([ক-হয়])ই/gu, "$1ি")
-    .replace(/([ক-হয়])উ/gu, "$1ু").replace(/([ক-হয়])এ/gu, "$1ে")
-    .replace(/([ক-হয়])ও/gu, "$1ো").replace(/আি/gu, "াই")
+  return result.replace(/([\u0995-\u09B9\u09DF])আ/gu, "$1া").replace(/([\u0995-\u09B9\u09DF])ই/gu, "$1ি")
+    .replace(/([\u0995-\u09B9\u09DF])উ/gu, "$1ু").replace(/([\u0995-\u09B9\u09DF])এ/gu, "$1ে")
+    .replace(/([\u0995-\u09B9\u09DF])ও/gu, "$1ো").replace(/আি/gu, "াই")
     .replace(/আলল/gu, "আল্ল").replace(/লল/gu, "ল্ল")
     .replace(/^য়/u, "ইয়")
     .replace(/^া/u, "আ").replace(/^ি/u, "ই").replace(/^ু/u, "উ")
