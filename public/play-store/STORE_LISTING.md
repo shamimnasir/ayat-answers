@@ -69,7 +69,8 @@ Everyone
 (Your email address)
 
 ## Privacy Policy URL
-https://ayat-answers.lovable.app/privacy-policy.html
+Set this to the privacy-policy URL for the Git-hosted production site before
+submitting a new Play listing update.
 
 ---
 
@@ -86,7 +87,7 @@ https://ayat-answers.lovable.app/privacy-policy.html
 
 **Note:** Google Play requires minimum 2 screenshots, recommended 4-8.
 
-**💡 TIP:** For best results, take real screenshots from your app on a phone instead of using AI-generated mockups. Open https://ayat-answers.lovable.app on your phone, take screenshots of each screen, and upload those.
+**💡 TIP:** For best results, take real screenshots from the current app build on a phone instead of using mockups. Capture the home, reader, AI, and Surahs screens and upload those images.
 
 ---
 
