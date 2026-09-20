@@ -1,22 +1,23 @@
 const CACHE_NAME = 'alquran-v4';
-const STATIC_ASSETS = ['/', '/index.html', '/icon-192.png', '/icon-512.png', '/manifest.json'];
+const BASE = '/ayat-answers/';
+const STATIC_ASSETS = [BASE, `${BASE}index.html`, `${BASE}icon-192.png`, `${BASE}icon-512.png`, `${BASE}manifest.json`];
 
 // The bundled Quran text. Precached so the entire Quran is readable with no
 // network, including on a first launch that never reaches the API.
 // ~1.05 MB gzipped across the four editions.
 const QURAN_DATA = [
-  '/quran/surah-index.json',
-  '/quran/quran-arabic.json',
-  '/quran/quran-en.json',
-  '/quran/quran-bn.json',
-  '/quran/quran-translit.json',
+  `${BASE}quran/surah-index.json`,
+  `${BASE}quran/quran-arabic.json`,
+  `${BASE}quran/quran-en.json`,
+  `${BASE}quran/quran-bn.json`,
+  `${BASE}quran/quran-translit.json`,
 ];
 
 // Vite emits hashed filenames, so the build assets can't be listed statically.
 // Read them out of index.html at install time instead.
 async function precacheBuildAssets(cache) {
   try {
-    const res = await fetch('/index.html', { cache: 'reload' });
+    const res = await fetch(`${BASE}index.html`, { cache: 'reload' });
     if (!res.ok) return;
     const html = await res.text();
     const re = new RegExp('(?:src|href)="(/assets/[^"]+)"', 'g');
@@ -75,11 +76,11 @@ self.addEventListener('fetch', (event) => {
       const cache = await caches.open(CACHE_NAME);
       try {
         const res = await fetch(req);
-        if (res && res.ok) cache.put('/index.html', res.clone());
+        if (res && res.ok) cache.put(`${BASE}index.html`, res.clone());
         return res;
       } catch (e) {
-        const fallback = (await cache.match('/index.html', { ignoreVary: true }))
-          || (await cache.match('/', { ignoreVary: true }));
+        const fallback = (await cache.match(`${BASE}index.html`, { ignoreVary: true }))
+          || (await cache.match(BASE, { ignoreVary: true }));
         return fallback || Response.error();
       }
     })());
@@ -88,7 +89,7 @@ self.addEventListener('fetch', (event) => {
 
   // Bundled Quran text is immutable for a given deploy - always prefer the
   // cache and don't spend a network round trip revalidating several MB.
-  if (url.origin === self.location.origin && url.pathname.startsWith('/quran/')) {
+  if (url.origin === self.location.origin && url.pathname.startsWith(`${BASE}quran/`)) {
     event.respondWith((async () => {
       const cache = await caches.open(CACHE_NAME);
       const cached = await cache.match(req, { ignoreVary: true });

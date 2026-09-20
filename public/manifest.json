@@ -2,7 +2,9 @@
   "name": "Al Quran - القرآن الكريم",
   "short_name": "Al Quran",
   "description": "Read the Holy Quran with Arabic text, English & Bangla translations, AI-powered search, and bookmarks.",
-  "start_url": "/",
+  "id": "/ayat-answers/",
+  "start_url": "/ayat-answers/",
+  "scope": "/ayat-answers/",
   "display": "standalone",
   "orientation": "any",
   "background_color": "#0c1a0f",
@@ -12,25 +14,25 @@
   "categories": ["education", "books", "lifestyle"],
   "icons": [
     {
-      "src": "/icon-192.png",
+      "src": "/ayat-answers/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icon-512.png",
+      "src": "/ayat-answers/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icon-192.png",
+      "src": "/ayat-answers/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "/icon-512.png",
+      "src": "/ayat-answers/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

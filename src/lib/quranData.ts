@@ -17,11 +17,13 @@ export type EditionKey = "arabic" | "en" | "bn" | "translit";
 
 type EditionData = Record<string, string[]>;
 
+const BASE_URL = import.meta.env.BASE_URL;
+
 const FILES: Record<EditionKey, string> = {
-  arabic: "/quran/quran-arabic.json",
-  en: "/quran/quran-en.json",
-  bn: "/quran/quran-bn.json",
-  translit: "/quran/quran-translit.json",
+  arabic: `${BASE_URL}quran/quran-arabic.json`,
+  en: `${BASE_URL}quran/quran-en.json`,
+  bn: `${BASE_URL}quran/quran-bn.json`,
+  translit: `${BASE_URL}quran/quran-translit.json`,
 };
 
 const cache = new Map<EditionKey, EditionData>();
