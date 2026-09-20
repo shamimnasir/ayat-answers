@@ -1,7 +1,7 @@
 # Google Play Store Listing Content
 
 ## App Name (max 30 characters)
-Al Quran - القرآن الكريم
+Al Quran (আরবি-বাংলা-Eng অনুবাদ, উচ্চারণ & AI)
 
 ## Short Description (max 80 characters)
 Read the Holy Quran with Arabic text, translations & AI-powered search.
