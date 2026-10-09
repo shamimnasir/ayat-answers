@@ -20,7 +20,7 @@ async function precacheBuildAssets(cache) {
     const res = await fetch(`${BASE}index.html`, { cache: 'reload' });
     if (!res.ok) return;
     const html = await res.text();
-    const re = new RegExp('(?:src|href)="(/assets/[^"]+)"', 'g');
+    const re = new RegExp(`(?:src|href)="(${BASE}assets/[^"]+)"`, 'g');
     const urls = [...html.matchAll(re)].map((m) => m[1]);
     await Promise.all(urls.map((u) => cache.add(u).catch(() => {})));
   } catch (e) {
