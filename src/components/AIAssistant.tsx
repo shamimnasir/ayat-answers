@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Send, Bot, User, Loader2, Search, Sparkles, BookOpen } from "lucide-react";
-import { searchQuranAPI, searchQuranAPIBangla, searchCachedAyahs } from "@/lib/quranApi";
+import { searchQuranAPI, searchQuranAPIBangla } from "@/lib/quranApi";
+import { searchLocal } from "@/lib/localSearch";
 import { surahs } from "@/data/surahs";
 import { Ayah } from "@/types/quran";
 
@@ -244,12 +245,10 @@ async function generateResponse(question: string): Promise<{ response: string; v
     ...keywords.slice(0, 5),
   ].filter(Boolean);
 
-  // Also search cached data
-  const cachedResults = searchCachedAyahs(question.trim());
-  allResults.push(...cachedResults);
+  // The bundled Quran is searched first, so this works with no internet.
+  allResults.push(...(await searchLocal(keywords.length ? keywords : [question])));
 
-  // Search API with multiple terms in parallel
-  const searchPromises = searchTerms.map(async (term) => {
+  const searchPromises = (navigator.onLine ? searchTerms : []).map(async (term) => {
     if (!term) return [];
     try {
       return bn

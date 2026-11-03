@@ -12,13 +12,13 @@
     <meta name="apple-mobile-web-app-title" content="Al Quran" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="application-name" content="Al Quran" />
-    <link rel="manifest" href="/ayat-answers/manifest.json" />
-    <link rel="icon" type="image/png" href="/ayat-answers/icon-512.png">
-    <link rel="apple-touch-icon" href="/ayat-answers/icon-512.png" />
+    <link rel="manifest" href="%BASE_URL%manifest.json" />
+    <link rel="icon" type="image/png" href="%BASE_URL%icon-512.png">
+    <link rel="apple-touch-icon" href="%BASE_URL%icon-512.png" />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="/ayat-answers/icon-512.png">
+    <meta property="og:image" content="%BASE_URL%icon-512.png">
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:image" content="/ayat-answers/icon-512.png">
+    <meta name="twitter:image" content="%BASE_URL%icon-512.png">
     <meta property="og:title" content="Al Quran (আরবি-বাংলা-Eng অনুবাদ, উচ্চারণ &amp; AI)">
     <meta name="twitter:title" content="Al Quran (আরবি-বাংলা-Eng অনুবাদ, উচ্চারণ &amp; AI)">
     <meta property="og:description" content="Read the Holy Quran with Arabic text, English &amp; Bangla translations, AI-powered search, and bookmarks.">
@@ -28,9 +28,10 @@
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     <script>
-      if ('serviceWorker' in navigator) {
+      // The Android app ships its files inside the APK, so only the website needs a service worker.
+      if ('serviceWorker' in navigator && !(window.Capacitor && window.Capacitor.isNativePlatform())) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/ayat-answers/sw.js');
+          navigator.serviceWorker.register('%BASE_URL%sw.js');
         });
       }
     </script>

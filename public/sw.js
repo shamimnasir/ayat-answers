@@ -69,6 +69,8 @@ self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
+  // Recitation streams with Range requests; downloaded surahs live in their own cache.
+  if (url.hostname === 'verses.quran.com') return;
 
   // App shell: network-first so updates land, cached index.html when offline.
   if (req.mode === 'navigate') {

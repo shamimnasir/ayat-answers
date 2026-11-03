@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft, Bookmark, BookmarkCheck, Copy, Share2, ChevronUp, ChevronDown, Loader2, WifiOff, Languages } from "lucide-react";
+import { ArrowLeft, Bookmark, BookmarkCheck, Copy, Share2, ChevronUp, ChevronDown, Loader2, WifiOff, Languages, Play, Pause, Download, CheckCircle2 } from "lucide-react";
+import { useRecitation } from "@/hooks/useRecitation";
+import { downloadSurah, isSurahDownloaded, deleteSurahDownload, RECITER_NAME } from "@/lib/recitation";
 import { surahs } from "@/data/surahs";
 import { isBookmarked, addBookmark, removeBookmark } from "@/lib/bookmarks";
 import { fetchCompleteSurah } from "@/lib/quranApi";
@@ -32,6 +34,50 @@ export default function QuranReader({ surahId, onBack }: QuranReaderProps) {
     }
   });
   const [, forceUpdate] = useState(0);
+  const totalAyahs = surahs.find(s => s.id === surahId)?.totalAyahs ?? 0;
+  const recitation = useRecitation(surahId, totalAyahs);
+  const [download, setDownload] = useState<{ state: "idle" | "busy" | "done"; progress: number }>({ state: "idle", progress: 0 });
+
+  useEffect(() => {
+    let live = true;
+    setDownload({ state: "idle", progress: 0 });
+    isSurahDownloaded(surahId, totalAyahs)
+      .then(done => { if (live && done) setDownload({ state: "done", progress: 1 }); })
+      .catch(() => {});
+    return () => { live = false; };
+  }, [surahId, totalAyahs]);
+
+  useEffect(() => {
+    if (recitation.currentAyah === null) return;
+    document.getElementById(`ayah-${recitation.currentAyah}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [recitation.currentAyah]);
+
+  useEffect(() => {
+    if (recitation.error) {
+      toast(navigator.onLine
+        ? "Recitation could not be played. Please try again."
+        : "You're offline. Download this surah's recitation to listen without internet.");
+    }
+  }, [recitation.error]);
+
+  const toggleDownload = async () => {
+    if (download.state === "busy") return;
+    if (download.state === "done") {
+      await deleteSurahDownload(surahId, totalAyahs);
+      setDownload({ state: "idle", progress: 0 });
+      toast("Downloaded recitation removed");
+      return;
+    }
+    setDownload({ state: "busy", progress: 0 });
+    try {
+      await downloadSurah(surahId, totalAyahs, p => setDownload({ state: "busy", progress: p }));
+      setDownload({ state: "done", progress: 1 });
+      toast("Recitation saved for offline listening");
+    } catch {
+      setDownload({ state: "idle", progress: 0 });
+      toast("Download failed. Check your internet connection and try again.");
+    }
+  };
 
   const cyclePronunciation = () => {
     setPronunciationMode((mode) => {
@@ -129,6 +175,35 @@ export default function QuranReader({ surahId, onBack }: QuranReaderProps) {
             {ayahsList.length} verses • {surah.revelationType === 'Meccan' ? 'মক্কায় অবতীর্ণ' : 'মদিনায় অবতীর্ণ'}
           </p>
         )}
+        {!loading && !error && (
+          <div className="mt-2 flex items-center justify-center gap-2">
+            <button
+              onClick={() => (recitation.playing ? recitation.pause() : recitation.play())}
+              className="flex items-center gap-2 rounded-full bg-primary px-4 py-1.5 text-sm text-primary-foreground hover:opacity-90 transition-opacity"
+              aria-label={recitation.playing ? "Pause recitation" : "Play recitation"}
+            >
+              {recitation.playing ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+              <span>
+                {recitation.playing ? "Pause" : recitation.currentAyah !== null ? "Resume" : "Listen"}
+                {recitation.currentAyah ? ` · ${recitation.currentAyah}` : ""}
+              </span>
+            </button>
+            <button
+              onClick={toggleDownload}
+              className={`flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs hover:bg-muted transition-colors ${download.state === "done" ? "text-gold" : "text-muted-foreground"}`}
+              aria-label={download.state === "done" ? "Remove downloaded recitation" : "Download recitation for offline listening"}
+              title={`Recitation: ${RECITER_NAME}`}
+            >
+              {download.state === "busy" ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                : download.state === "done" ? <CheckCircle2 className="w-3.5 h-3.5" />
+                : <Download className="w-3.5 h-3.5" />}
+              <span>
+                {download.state === "busy" ? `${Math.round(download.progress * 100)}%`
+                  : download.state === "done" ? "Saved offline" : "Download"}
+              </span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Loading state */}
@@ -162,7 +237,7 @@ export default function QuranReader({ surahId, onBack }: QuranReaderProps) {
 
       {/* Bismillah */}
       {!loading && !error && surahId !== 1 && surahId !== 9 && (
-        <div className="text-center py-6 px-4">
+        <div id="ayah-0" className={`text-center py-6 px-4 rounded-xl transition-colors ${recitation.currentAyah === 0 ? "bg-gold/10" : ""}`}>
           <p className="font-arabic text-gold text-2xl leading-relaxed">
             بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
           </p>
@@ -176,13 +251,26 @@ export default function QuranReader({ surahId, onBack }: QuranReaderProps) {
             const bookmarked = isBookmarked(surahId, ayah.ayahNumber);
 
             return (
-              <div key={ayah.id} className="verse-card animate-fade-in">
+              <div
+                key={ayah.id}
+                id={`ayah-${ayah.ayahNumber}`}
+                className={`verse-card animate-fade-in transition-shadow ${recitation.currentAyah === ayah.ayahNumber ? "ring-2 ring-gold/60" : ""}`}
+              >
                 {/* Ayah number bar */}
                 <div className="flex items-center justify-between mb-3">
                   <div className="ayah-separator">
                     <span>{ayah.ayahNumber}</span>
                   </div>
                 <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => (recitation.playing && recitation.currentAyah === ayah.ayahNumber ? recitation.pause() : recitation.play(ayah.ayahNumber))}
+                      className="p-1.5 rounded hover:bg-muted transition-colors"
+                      aria-label={recitation.playing && recitation.currentAyah === ayah.ayahNumber ? "Pause recitation" : `Play from verse ${ayah.ayahNumber}`}
+                    >
+                      {recitation.playing && recitation.currentAyah === ayah.ayahNumber
+                        ? <Pause className="w-4 h-4 text-gold" />
+                        : <Play className="w-4 h-4 text-muted-foreground" />}
+                    </button>
                     <button onClick={() => handleBookmark(ayah.ayahNumber)} className="p-1.5 rounded hover:bg-muted transition-colors" aria-label={bookmarked ? "Remove bookmark" : "Bookmark verse"}>
                       {bookmarked ? <BookmarkCheck className="w-4 h-4 text-gold" /> : <Bookmark className="w-4 h-4 text-muted-foreground" />}
                     </button>

@@ -1,5 +1,20 @@
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
+import "@fontsource/amiri/400.css";
+import "@fontsource/amiri/700.css";
+import "@fontsource/noto-naskh-arabic/400.css";
+import "@fontsource/noto-naskh-arabic/500.css";
+import "@fontsource/noto-naskh-arabic/600.css";
+import "@fontsource/noto-naskh-arabic/700.css";
+import "@fontsource/crimson-pro/400.css";
+import "@fontsource/crimson-pro/400-italic.css";
+import "@fontsource/crimson-pro/500.css";
+import "@fontsource/crimson-pro/600.css";
+import "@fontsource/crimson-pro/700.css";
+import "@fontsource/noto-sans-bengali/400.css";
+import "@fontsource/noto-sans-bengali/500.css";
+import "@fontsource/noto-sans-bengali/600.css";
+import "@fontsource/noto-sans-bengali/700.css";
 import "./index.css";
 
 createRoot(document.getElementById("root")!).render(<App />);
