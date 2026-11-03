@@ -35,7 +35,7 @@ export default function QuranReader({ surahId, onBack }: QuranReaderProps) {
   });
   const [, forceUpdate] = useState(0);
   const totalAyahs = surahs.find(s => s.id === surahId)?.totalAyahs ?? 0;
-  const recitation = useRecitation(surahId, totalAyahs);
+  const recitation = useRecitation(surahId, totalAyahs, surahs.find(s => s.id === surahId)?.nameEnglish);
   const [download, setDownload] = useState<{ state: "idle" | "busy" | "done"; progress: number }>({ state: "idle", progress: 0 });
 
   useEffect(() => {
