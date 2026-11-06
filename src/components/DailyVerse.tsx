@@ -1,23 +1,43 @@
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
 import { surahs } from "@/data/surahs";
-import { getAllCachedAyahs } from "@/lib/quranApi";
-import { ayahs as fallbackAyahs } from "@/data/ayahs";
-import { Ayah } from "@/types/quran";
+import { getVerses, loadEdition } from "@/lib/quranData";
+import { pickDailyVerse } from "@/data/dailyVerses";
 
 interface DailyVerseProps {
   onSelectSurah: (surahId: number) => void;
 }
 
+interface Verse {
+  surahId: number;
+  ayahNumber: number;
+  arabicText: string;
+  englishTranslation: string;
+  banglaTranslation: string;
+}
+
 export default function DailyVerse({ onSelectSurah }: DailyVerseProps) {
-  const ayah = useMemo(() => {
-    // Use cached data if available, otherwise fallback
-    const allCached = getAllCachedAyahs();
-    const pool: Ayah[] = allCached.length > 0 ? allCached : fallbackAyahs;
-    // Use date-based seed for consistent daily verse
-    const today = new Date();
-    const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
-    return pool[seed % pool.length];
+  const [ayah, setAyah] = useState<Verse | null>(null);
+
+  useEffect(() => {
+    let live = true;
+    const [surahId, ayahNumber] = pickDailyVerse(new Date());
+    Promise.all([loadEdition("arabic"), loadEdition("en"), loadEdition("bn")])
+      .then(() => {
+        if (!live) return;
+        const text = (edition: "arabic" | "en" | "bn") => getVerses(edition, surahId)?.[ayahNumber - 1] ?? "";
+        setAyah({
+          surahId,
+          ayahNumber,
+          arabicText: text("arabic"),
+          englishTranslation: text("en"),
+          banglaTranslation: text("bn"),
+        });
+      })
+      .catch(() => { /* the rest of the home screen still works without the card */ });
+    return () => { live = false; };
   }, []);
+
+  if (!ayah) return null;
 
   const surah = surahs.find(s => s.id === ayah.surahId);
 
