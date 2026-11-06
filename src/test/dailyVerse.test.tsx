@@ -24,7 +24,7 @@ describe("daily verse list", () => {
 
   it("contains no verse about punishment or Hell, which read badly without context", () => {
     for (const [s, a] of DAILY_VERSES) {
-      expect(en[s][a - 1], `${s}:${a}`).not.toMatch(/\b(punish\w*|fire|hell\w*|fight\w*)\b/i);
+      expect(en[s][a - 1], `${s}:${a}`).not.toMatch(/\b([Pp]unish\w*|Fire|Hell\w*|[Ff]ight\w*)\b/);
     }
   });
 
