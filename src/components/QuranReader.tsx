@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { ArrowLeft, Bookmark, BookmarkCheck, Copy, Share2, ChevronUp, ChevronDown, Loader2, WifiOff, Languages, Play, Pause, Download, CheckCircle2 } from "lucide-react";
 import { useRecitation } from "@/hooks/useRecitation";
+import { noteSurahFinishedReading } from "@/lib/reviewPrompt";
 import { downloadSurah, isSurahDownloaded, deleteSurahDownload, RECITER_NAME } from "@/lib/recitation";
 import { surahs } from "@/data/surahs";
 import { isBookmarked, addBookmark, removeBookmark } from "@/lib/bookmarks";
@@ -145,7 +146,7 @@ export default function QuranReader({ surahId, onBack }: QuranReaderProps) {
       {/* Header */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border px-4 py-3">
         <div className="flex items-center gap-3">
-            <button onClick={onBack} className="p-2 rounded-lg hover:bg-muted transition-colors" aria-label="Back to surah list">
+            <button onClick={() => { noteSurahFinishedReading(); onBack(); }} className="p-2 rounded-lg hover:bg-muted transition-colors" aria-label="Back to surah list">
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div className="flex-1 text-center">

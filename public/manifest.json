@@ -1,7 +1,7 @@
 {
-  "name": "Al Quran (আরবি-বাংলা-Eng অনুবাদ, উচ্চারণ & AI)",
+  "name": "Al Quran Bangla",
   "short_name": "Al Quran",
-  "description": "Read the Holy Quran with Arabic text, English & Bangla translations, AI-powered search, and bookmarks.",
+  "description": "Read and listen to the Holy Quran with Arabic text, Bangla and English translation, Bengali pronunciation, and audio recitation. Works offline.",
   "id": "/ayat-answers/",
   "start_url": "/ayat-answers/",
   "scope": "/ayat-answers/",
@@ -11,7 +11,11 @@
   "theme_color": "#1a3a2a",
   "lang": "en",
   "dir": "ltr",
-  "categories": ["education", "books", "lifestyle"],
+  "categories": [
+    "education",
+    "books",
+    "lifestyle"
+  ],
   "icons": [
     {
       "src": "/ayat-answers/icon-192.png",
@@ -39,5 +43,11 @@
     }
   ],
   "screenshots": [],
-  "prefer_related_applications": false
+  "prefer_related_applications": false,
+  "related_applications": [
+    {
+      "platform": "play",
+      "id": "procreators.io.alquran"
+    }
+  ]
 }

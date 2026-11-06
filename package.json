@@ -14,6 +14,7 @@
     "build:app": "vite build --mode app && mv dist-app/index.source.html dist-app/index.html && rm -rf dist-app/sw.js dist-app/play-store dist-app/_redirects"
   },
   "dependencies": {
+    "@capacitor-community/in-app-review": "^8.0.0",
     "@capacitor/android": "^8.6.0",
     "@capacitor/core": "^8.6.0",
     "@capgo/capacitor-media-session": "^8.1.7",

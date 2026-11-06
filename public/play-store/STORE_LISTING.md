@@ -1,97 +1,107 @@
 # Google Play Store Listing Content
 
 ## App Name (max 30 characters)
-Al Quran (আরবি-বাংলা-Eng অনুবাদ, উচ্চারণ & AI)
+আল কুরআন Al Quran Bangla Audio
 
 ## Short Description (max 80 characters)
-Holy Quran with Arabic, Bengali and English text, translations & AI search.
+Bangla & English meaning, Bengali pronunciation, audio recitation, fully offline
 
 ## Full Description (max 4000 characters)
 
-Al Quran: The Holy Quran with Arabic Text, Bangla and English Translation
+Al Quran Bangla: read and listen to the complete Holy Quran with Bangla meaning, Bengali pronunciation and audio recitation. All 114 surahs in Arabic, with Bangla and English translation of every ayah, in one free app that works offline from the first launch.
 
-Read the complete Holy Quran on your phone. Al Quran gives you all 114 Surahs with the Arabic text, a Bangla (বাংলা) and an English translation for every ayah, plus a pronunciation guide and AI-powered search.
+আল কুরআন বাংলা অর্থ, বাংলা উচ্চারণ ও অডিও তেলাওয়াতসহ।
 
-KEY FEATURES
+LISTEN TO QURAN RECITATION
+• Verse-by-verse Quran audio by Mishary Rashid Alafasy
+• The verse being recited is highlighted and scrolls into view
+• Start from any verse, or listen to the whole surah
+• Keeps playing with the screen off, with lock-screen controls
+• Download any surah to listen offline (streaming needs internet)
 
-Complete Quran
-• All 114 Surahs with full Arabic text
-• Bangla (বাংলা) translation for every ayah
-• English translation for every ayah
-• Pronunciation guide for easier reading
-• Adjustable Arabic text size
+READ IN ARABIC, BANGLA AND ENGLISH
+• Complete Arabic text of the Quran in Uthmani script
+• Bangla translation of every ayah
+• English translation of every ayah
+• Bengali pronunciation (বাংলা উচ্চারণ) and English transliteration, a help for anyone learning to read the Quran
+• Adjustable Arabic text size, with light and dark mode
 
-AI-Powered Search
-• Search the Quran by topic, keyword or question
-• Search in Arabic, English or Bangla
-• Find relevant verses quickly
+OFFLINE QURAN
+• The full Quran text and translations are inside the app, so you can read with no internet, even on first launch
+• Search and bookmarks work offline too
 
-Bookmarks and Daily Verse
-• Save your favourite verses for later
-• A new Ayah of the Day every day
+SEARCH THE QURAN
+• Search every verse by word, topic or question
+• Search in Arabic, Bangla or English
+• Tap a result to open the full surah
 
-Reading Comfort
-• Light and dark mode
-• Clean, distraction-free reading layout
+AYAH OF THE DAY AND BOOKMARKS
+• A new verse from the Quran every day
+• Save your favourite verses to read again
 
-Read Offline
-• The Quran text is included in the app, so you can read it without internet after the first launch
+FIND POPULAR SURAHS QUICKLY
+Surah Al-Fatiha, Al-Baqarah with Ayatul Kursi, Yasin, Ar-Rahman, Al-Mulk, Al-Kahf, Al-Waqiah and all 114 surahs of the Holy Quran.
 
-Languages: Arabic, Bangla, English
+FREE, WITH NO ADS
+No ads and no account needed. Open the app and start reading.
 
-Download now and start reading the Holy Quran.
+May this app help you read, understand and listen to the Quran every day.
 
 ---
 
 ## Bangla (bn-BD) Listing
 
 ### App Name (max 30 characters)
-আল কুরআন: বাংলা অনুবাদ
+আল কুরআন বাংলা উচ্চারণ ও অডিও
 
 ### Short Description (max 80 characters)
-কুরআন পড়ুন: আরবি পাঠ, বাংলা ও ইংরেজি অনুবাদ, উচ্চারণ ও এআই অনুসন্ধান
+অর্থসহ বাংলা উচ্চারণ, অডিও তেলাওয়াত ও ইংরেজি অনুবাদ। সম্পূর্ণ অফলাইন কুরআন।
 
 ### Full Description (max 4000 characters)
-আল কুরআন: বাংলা অনুবাদ ও আরবি মূল পাঠ সহ পবিত্র কুরআন
+আল কুরআন বাংলা: বাংলা অর্থ, বাংলা উচ্চারণ ও অডিও তেলাওয়াতসহ সম্পূর্ণ পবিত্র কুরআন মাজিদ। ১১৪টি সূরার আরবি পাঠ এবং প্রতিটি আয়াতের বাংলা ও ইংরেজি অনুবাদ একটি বিনামূল্যের অ্যাপে। প্রথমবার খোলার পর থেকেই ইন্টারনেট ছাড়া কোরআন শরীফ পড়ুন।
 
-পবিত্র কুরআন মাজিদের সম্পূর্ণ পাঠ এখন আপনার মোবাইলে। ১১৪টি সূরার আরবি মূল পাঠ, প্রতিটি আয়াতের বাংলা ও ইংরেজি অনুবাদ এবং উচ্চারণ একটি অ্যাপে পড়ুন। কুরআন তেলাওয়াত, বাংলা অনুবাদ ও কুরআনের বিষয় খোঁজার জন্য এটি একটি সহজ সঙ্গী।
+কুরআন তেলাওয়াত শুনুন
+• মিশারি রাশিদ আলাফাসির কণ্ঠে আয়াত অনুযায়ী কুরআন অডিও
+• যে আয়াত তেলাওয়াত হচ্ছে সেটি হাইলাইট থাকে এবং স্ক্রিনে চলে আসে
+• পুরো সূরা শুনুন অথবা যেকোনো আয়াত থেকে শুরু করুন
+• স্ক্রিন বন্ধ থাকলেও তেলাওয়াত চলে, লক স্ক্রিন থেকেই নিয়ন্ত্রণ করুন
+• অফলাইনে শোনার জন্য যেকোনো সূরা ডাউনলোড করুন (ডাউনলোড ছাড়া শুনতে ইন্টারনেট লাগবে)
 
-মূল বৈশিষ্ট্য
-
-সম্পূর্ণ কুরআন
-• ১১৪টি সূরা, আরবি মূল পাঠসহ
-• প্রতিটি আয়াতের বাংলা অনুবাদ
+আরবি, বাংলা ও ইংরেজিতে পড়ুন
+• উসমানি লিপিতে কুরআনের সম্পূর্ণ আরবি পাঠ
+• প্রতিটি আয়াতের বাংলা অর্থ ও অনুবাদ
 • প্রতিটি আয়াতের ইংরেজি অনুবাদ
-• আরবি উচ্চারণ, যাতে পড়া সহজ হয়
-• আরবি লেখার আকার নিজের মতো বাড়ানো বা কমানো
+• আরবি উচ্চারণ বাংলায়, যারা কুরআন পড়া শিখছেন তাদের জন্য সহায়ক
+• আরবি লেখার আকার বাড়ানো-কমানোর সুবিধা, লাইট ও ডার্ক মোড
 
-এআই অনুসন্ধান
-• বিষয়, শব্দ বা প্রশ্ন লিখে পুরো কুরআনে খুঁজুন
-• আরবি, ইংরেজি বা বাংলায় অনুসন্ধান করুন
-• প্রাসঙ্গিক আয়াত দ্রুত খুঁজে পান
+অফলাইন কুরআন
+• কুরআনের সম্পূর্ণ পাঠ ও অনুবাদ অ্যাপের ভেতরেই আছে, প্রথমবার খুলতেও ইন্টারনেট লাগে না
+• অনুসন্ধান ও বুকমার্কও অফলাইনে কাজ করে
 
-বুকমার্ক ও প্রতিদিনের আয়াত
-• প্রিয় আয়াত সংরক্ষণ করে পরে পড়ুন
-• প্রতিদিন একটি নতুন আয়াত দিয়ে অনুপ্রাণিত হোন
+কুরআনে অনুসন্ধান
+• শব্দ, বিষয় বা প্রশ্ন লিখে সব আয়াতে খুঁজুন
+• আরবি, বাংলা বা ইংরেজিতে অনুসন্ধান করুন
+• ফলাফলে ট্যাপ করে পুরো সূরা পড়ুন
 
-পড়ার আরাম
-• লাইট ও ডার্ক মোড
-• মনোযোগ ধরে রাখার জন্য সহজ, পরিষ্কার পাঠের পরিবেশ
+আজকের আয়াত ও বুকমার্ক
+• প্রতিদিন কুরআনের একটি নতুন আয়াত
+• প্রিয় আয়াত সংরক্ষণ করে পরে আবার পড়ুন
 
-ইন্টারনেট ছাড়াই পড়ুন
-• প্রথমবার চালুর পর কুরআনের পাঠ অ্যাপেই থাকে, তাই ইন্টারনেট ছাড়াও পড়া যায়
+জনপ্রিয় সূরা সহজেই খুঁজে নিন
+সূরা ফাতিহা, আয়াতুল কুরসিসহ সূরা বাকারা, সূরা ইয়াসিন, সূরা আর-রহমান, সূরা মুলক, সূরা কাহফ, সূরা ওয়াকিয়া এবং কুরআনের ১১৪টি সূরা।
 
-ভাষা: আরবি, বাংলা, ইংরেজি
+বিনামূল্যে, কোনো বিজ্ঞাপন নেই
+কোনো বিজ্ঞাপন নেই, অ্যাকাউন্টও লাগে না। অ্যাপ খুলেই পড়া শুরু করুন।
 
-আজই পবিত্র কুরআন পড়া শুরু করুন।
+আল্লাহ আমাদের প্রতিদিন কুরআন পড়া, বোঝা ও শোনার তাওফিক দিন।
 
 ---
 
 ## Category
-Education
+Books & Reference
 
 ## Tags/Keywords
-quran, holy quran, islam, arabic, bangla quran, english quran, quran translation, islamic app, quran reader, al quran, কুরআন, القرآن
+Set in Play Console under Store settings.
 
 ## Content Rating
 Everyone
@@ -135,10 +145,7 @@ Everything here is now captured from the running app, or drawn from real text:
 
 | File | What it is |
 |---|---|
-| `screenshot-1-home.png` | Home, Ayah of the Day |
-| `screenshot-2-surahs.png` | Surah list |
-| `screenshot-3-reader-pronunciation.png` | Reader with the pronunciation line |
-| `screenshot-4-ai-search.png` | AI search with suggestions |
+| (Play Console) `1-home`, `2-recitation`, `3-lock-screen`, `4-ai-search`, `5-surahs` | Captured from 2.0 on an emulator, Nov 2026 |
 | `feature-graphic.png` | Built from `feature-graphic.html` |
 
 All screenshots are 1080x1920 (9:16), above Play's 1080 px promotion threshold.
